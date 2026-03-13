@@ -35,6 +35,7 @@ export default antfu(
       'auto-imports.d.ts',
       'components.d.ts',
       'docs/*',
+      '.claude/',
     ],
   },
   /* From the second arguments they are ESLint Flat Configs */

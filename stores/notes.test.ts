@@ -1,0 +1,186 @@
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useCategoriesStore } from './categories'
+import { useNotesStore } from './notes'
+
+beforeEach(() => {
+  setActivePinia(createPinia())
+})
+
+describe('useNotesStore', () => {
+  describe('addNote', () => {
+    it('adds a note and increments list length', () => {
+      const store = useNotesStore()
+      const result = store.addNote('Hello world')
+      expect(result).toBe(true)
+      expect(store.notes).toHaveLength(1)
+      expect(store.notes[0].text).toBe('Hello world')
+    })
+
+    it('trims whitespace when saving', () => {
+      const store = useNotesStore()
+      store.addNote('  trimmed  ')
+      expect(store.notes[0].text).toBe('trimmed')
+    })
+
+    it('does not add note with empty content and returns false', () => {
+      const store = useNotesStore()
+      const result = store.addNote('   ')
+      expect(result).toBe(false)
+      expect(store.notes).toHaveLength(0)
+    })
+  })
+
+  describe('updateNote', () => {
+    it('updates note content correctly', () => {
+      const store = useNotesStore()
+      store.addNote('original')
+      const id = store.notes[0].id
+      const result = store.updateNote(id, 'updated')
+      expect(result).toBe(true)
+      expect(store.notes[0].text).toBe('updated')
+    })
+
+    it('trims whitespace on update', () => {
+      const store = useNotesStore()
+      store.addNote('original')
+      const id = store.notes[0].id
+      store.updateNote(id, '  padded  ')
+      expect(store.notes[0].text).toBe('padded')
+    })
+
+    it('returns false and does not update if text is empty', () => {
+      const store = useNotesStore()
+      store.addNote('original')
+      const id = store.notes[0].id
+      const result = store.updateNote(id, '   ')
+      expect(result).toBe(false)
+      expect(store.notes[0].text).toBe('original')
+    })
+
+    it('returns false for non-existent id', () => {
+      const store = useNotesStore()
+      const result = store.updateNote('no-such-id', 'text')
+      expect(result).toBe(false)
+    })
+  })
+
+  describe('deleteNote', () => {
+    it('removes the note from the list', () => {
+      const store = useNotesStore()
+      store.addNote('to delete')
+      const id = store.notes[0].id
+      store.deleteNote(id)
+      expect(store.notes).toHaveLength(0)
+    })
+
+    it('only removes the targeted note', () => {
+      const store = useNotesStore()
+      store.addNote('keep')
+      store.addNote('delete me')
+      const idToDelete = store.notes.find(n => n.text === 'delete me')!.id
+      store.deleteNote(idToDelete)
+      expect(store.notes).toHaveLength(1)
+      expect(store.notes[0].text).toBe('keep')
+    })
+  })
+
+  describe('addNote with categoryId', () => {
+    it('stores categoryId when provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello', 'cat-1')
+      expect(store.notes[0].categoryId).toBe('cat-1')
+    })
+
+    it('defaults categoryId to null when not provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello')
+      expect(store.notes[0].categoryId).toBeNull()
+    })
+  })
+
+  describe('updateNote with categoryId', () => {
+    it('updates categoryId when provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello')
+      const id = store.notes[0].id
+      store.updateNote(id, 'hello', 'cat-2')
+      expect(store.notes[0].categoryId).toBe('cat-2')
+    })
+
+    it('leaves categoryId unchanged when not provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello', 'cat-1')
+      const id = store.notes[0].id
+      store.updateNote(id, 'updated')
+      expect(store.notes[0].categoryId).toBe('cat-1')
+    })
+  })
+
+  describe('notesByCategory getter', () => {
+    it('returns only notes matching the given categoryId', () => {
+      const store = useNotesStore()
+      store.addNote('work note', 'cat-1')
+      store.addNote('personal note', 'cat-2')
+      store.addNote('uncategorized note')
+      const result = store.notesByCategory('cat-1')
+      expect(result).toHaveLength(1)
+      expect(result[0].text).toBe('work note')
+    })
+
+    it('returns uncategorized notes when null is passed', () => {
+      const store = useNotesStore()
+      store.addNote('has category', 'cat-1')
+      store.addNote('no category')
+      expect(store.notesByCategory(null)).toHaveLength(1)
+      expect(store.notesByCategory(null)[0].text).toBe('no category')
+    })
+  })
+
+  describe('clearCategoryFromNotes', () => {
+    it('sets categoryId to null for all notes with the given categoryId', () => {
+      const store = useNotesStore()
+      store.addNote('note 1', 'cat-1')
+      store.addNote('note 2', 'cat-1')
+      store.addNote('note 3', 'cat-2')
+      store.clearCategoryFromNotes('cat-1')
+      expect(store.notes.find(n => n.text === 'note 1')!.categoryId).toBeNull()
+      expect(store.notes.find(n => n.text === 'note 2')!.categoryId).toBeNull()
+      expect(store.notes.find(n => n.text === 'note 3')!.categoryId).toBe('cat-2')
+    })
+  })
+
+  describe('deleteCategory integration', () => {
+    it('clearing a category from categories store nullifies associated notes', () => {
+      const notesStore = useNotesStore()
+      const categoriesStore = useCategoriesStore()
+      categoriesStore.addCategory('Work')
+      const catId = categoriesStore.categories[0].id
+      notesStore.addNote('work note', catId)
+      categoriesStore.deleteCategory(catId)
+      expect(notesStore.notes[0].categoryId).toBeNull()
+    })
+  })
+
+  describe('sortedNotes getter', () => {
+    it('returns notes sorted newest-first by createdAt', () => {
+      const store = useNotesStore()
+      store.addNote('first')
+      store.addNote('second')
+      store.addNote('third')
+      const sorted = store.sortedNotes
+      expect(sorted[0].text).toBe('third')
+      expect(sorted[1].text).toBe('second')
+      expect(sorted[2].text).toBe('first')
+    })
+
+    it('does not mutate the original notes array order', () => {
+      const store = useNotesStore()
+      store.addNote('a')
+      store.addNote('b')
+      const originalFirst = store.notes[0].text
+      void store.sortedNotes
+      expect(store.notes[0].text).toBe(originalFirst)
+    })
+  })
+})

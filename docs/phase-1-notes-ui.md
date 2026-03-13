@@ -126,41 +126,41 @@ interface Note {
 
 ### Store（`stores/notes.ts`）
 
-- [ ] 建立 `stores/notes.test.ts`，撰寫失敗測試（TDD red）
-  - [ ] 測試 `addNote` — 新增非空白筆記後清單長度 +1
-  - [ ] 測試 `addNote` — 空白內容不新增，回傳 false
-  - [ ] 測試 `updateNote` — 更新後內容正確反映
-  - [ ] 測試 `deleteNote` — 刪除後清單不含該 id
-  - [ ] 測試 `sortedNotes` getter — 依 `createdAt` 降冪排序
-- [ ] 實作 `stores/notes.ts`，使所有 Store 測試通過（TDD green）
-  - [ ] `state`: `notes: Note[]`
-  - [ ] `getter`: `sortedNotes` — newest-first
-  - [ ] `action`: `addNote(text: string): boolean`
-  - [ ] `action`: `updateNote(id: string, text: string): boolean`
-  - [ ] `action`: `deleteNote(id: string): void`
+- [x] 建立 `stores/notes.test.ts`，撰寫失敗測試（TDD red）
+  - [x] 測試 `addNote` — 新增非空白筆記後清單長度 +1
+  - [x] 測試 `addNote` — 空白內容不新增，回傳 false
+  - [x] 測試 `updateNote` — 更新後內容正確反映
+  - [x] 測試 `deleteNote` — 刪除後清單不含該 id
+  - [x] 測試 `sortedNotes` getter — 依 `createdAt` 降冪排序
+- [x] 實作 `stores/notes.ts`，使所有 Store 測試通過（TDD green）
+  - [x] `state`: `notes: Note[]`
+  - [x] `getter`: `sortedNotes` — newest-first
+  - [x] `action`: `addNote(text: string): boolean`
+  - [x] `action`: `updateNote(id: string, text: string): boolean`
+  - [x] `action`: `deleteNote(id: string): void`
 
 ### 元件（Components）
 
-- [ ] 建立 `components/NoteEditor.vue`
-  - [ ] textarea 輸入欄位
-  - [ ] 儲存按鈕（送出時 trim，空白則顯示 inline 錯誤訊息）
-  - [ ] 取消按鈕（還原或關閉表單）
-- [ ] 建立 `components/ConfirmDialog.vue`
-  - [ ] 接受 `message` prop
-  - [ ] emit `confirm` / `cancel` 事件
-- [ ] 建立 `components/NoteItem.vue`
-  - [ ] 顯示筆記文字（截斷超長文字）
-  - [ ] 複製按鈕：呼叫 Clipboard API，成功顯示短暫視覺回饋，失敗顯示錯誤訊息
-  - [ ] 編輯按鈕：觸發編輯模式
-  - [ ] 刪除按鈕：顯示 ConfirmDialog，確認後呼叫 deleteNote
-- [ ] 建立 `components/NoteList.vue`
-  - [ ] 遍歷 `sortedNotes`，渲染 NoteItem
-  - [ ] 空清單時顯示引導提示文字
-- [ ] 更新 `entrypoints/sidepanel/views/HomeView.vue`
-  - [ ] 整合 NoteList + NoteEditor（新增模式）
-  - [ ] 選取筆記後切換 NoteEditor 為編輯模式
+- [x] 建立 `components/NoteEditor.vue`
+  - [x] textarea 輸入欄位
+  - [x] 儲存按鈕（送出時 trim，空白則顯示 inline 錯誤訊息）
+  - [x] 取消按鈕（還原或關閉表單）
+- [x] 建立 `components/ConfirmDialog.vue`
+  - [x] 接受 `message` prop
+  - [x] emit `confirm` / `cancel` 事件
+- [x] 建立 `components/NoteItem.vue`
+  - [x] 顯示筆記文字（截斷超長文字）
+  - [x] 複製按鈕：呼叫 Clipboard API，成功顯示短暫視覺回饋，失敗顯示錯誤訊息
+  - [x] 編輯按鈕：觸發編輯模式
+  - [x] 刪除按鈕：顯示 ConfirmDialog，確認後呼叫 deleteNote
+- [x] 建立 `components/NoteList.vue`
+  - [x] 遍歷 `sortedNotes`，渲染 NoteItem
+  - [x] 空清單時顯示引導提示文字
+- [x] 更新 `entrypoints/sidepanel/views/HomeView.vue`
+  - [x] 整合 NoteList + NoteEditor（新增模式）
+  - [x] 選取筆記後切換 NoteEditor 為編輯模式
 
 ### 側邊欄行為
 
-- [ ] 確認 `entrypoints/background.ts` 的 icon 點擊開啟 / 關閉 side panel 行為符合 US-01
-- [ ] 確認 WXT side panel 跨頁面持久顯示（US-02，框架層已支援，驗證即可）
+- [x] 確認 `entrypoints/background.ts` 的 icon 點擊開啟 / 關閉 side panel 行為符合 US-01
+- [x] 確認 WXT side panel 跨頁面持久顯示（US-02，框架層已支援，驗證即可）

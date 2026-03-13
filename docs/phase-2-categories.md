@@ -93,40 +93,40 @@ interface Note {
 
 ### 分類 Store（`stores/categories.ts`）
 
-- [ ] 建立 `stores/categories.test.ts`，撰寫失敗測試（TDD red）
-  - [ ] 測試 `addCategory` — 新增唯一名稱後清單 +1
-  - [ ] 測試 `addCategory` — 重複名稱回傳 false 並顯示錯誤
-  - [ ] 測試 `addCategory` — 空白名稱回傳 false
-  - [ ] 測試 `deleteCategory` — 刪除後清單不含該 id
-- [ ] 實作 `stores/categories.ts`，使所有測試通過（TDD green）
-  - [ ] `state`: `categories: Category[]`
-  - [ ] `getter`: `categoryById(id)` — 依 id 查找
-  - [ ] `action`: `addCategory(name: string): boolean`
-  - [ ] `action`: `deleteCategory(id: string): void`
+- [x] 建立 `stores/categories.test.ts`，撰寫失敗測試（TDD red）
+  - [x] 測試 `addCategory` — 新增唯一名稱後清單 +1
+  - [x] 測試 `addCategory` — 重複名稱回傳 false 並顯示錯誤
+  - [x] 測試 `addCategory` — 空白名稱回傳 false
+  - [x] 測試 `deleteCategory` — 刪除後清單不含該 id
+- [x] 實作 `stores/categories.ts`，使所有測試通過（TDD green）
+  - [x] `state`: `categories: Category[]`
+  - [x] `getter`: `categoryById(id)` — 依 id 查找
+  - [x] `action`: `addCategory(name: string): boolean`
+  - [x] `action`: `deleteCategory(id: string): void`
 
 ### 筆記 Store 擴充（`stores/notes.ts`）
 
-- [ ] 更新 `Note` interface，加入 `categoryId: string | null`
-- [ ] 更新 `stores/notes.test.ts`，補充含 `categoryId` 的測試
-  - [ ] 測試 `notesByCategory(categoryId)` getter — 正確過濾
-  - [ ] 測試 `deleteCategory` 後關聯筆記的 `categoryId` 變為 `null`
-- [ ] 實作 `notesByCategory(categoryId: string | null)` getter
-- [ ] 在 `deleteCategory` action（或由 categories store 呼叫）中重置關聯筆記的 `categoryId`
+- [x] 更新 `Note` interface，加入 `categoryId: string | null`
+- [x] 更新 `stores/notes.test.ts`，補充含 `categoryId` 的測試
+  - [x] 測試 `notesByCategory(categoryId)` getter — 正確過濾
+  - [x] 測試 `deleteCategory` 後關聯筆記的 `categoryId` 變為 `null`
+- [x] 實作 `notesByCategory(categoryId: string | null)` getter
+- [x] 在 `deleteCategory` action（或由 categories store 呼叫）中重置關聯筆記的 `categoryId`
 
 ### 元件（Components）
 
-- [ ] 建立 `components/CategoryManager.vue`
-  - [ ] 顯示分類清單
-  - [ ] 新增分類輸入欄（空白 / 重複名稱顯示錯誤）
-  - [ ] 每個分類旁有刪除按鈕，含有筆記時顯示警告提示（ConfirmDialog）
-- [ ] 建立 `components/CategoryFilter.vue`
-  - [ ] 「全部」選項 + 各分類 tab / chip
-  - [ ] 選取後 emit `filter-change` 事件並更新筆記清單
-- [ ] 修改 `components/NoteEditor.vue`
-  - [ ] 加入分類 `<select>` 或 combobox，列出所有分類（含「未分類」選項）
-  - [ ] 儲存時帶入選取的 `categoryId`
-- [ ] 修改 `components/NoteItem.vue`
-  - [ ] 筆記卡片上顯示所屬分類名稱 badge（未分類則不顯示）
-- [ ] 更新 `entrypoints/sidepanel/views/HomeView.vue`
-  - [ ] 加入 CategoryFilter，依 activeCategory 過濾傳給 NoteList 的筆記清單
-  - [ ] 提供入口開啟 CategoryManager（例如設定按鈕）
+- [x] 建立 `components/CategoryManager.vue`
+  - [x] 顯示分類清單
+  - [x] 新增分類輸入欄（空白 / 重複名稱顯示錯誤）
+  - [x] 每個分類旁有刪除按鈕，含有筆記時顯示警告提示（ConfirmDialog）
+- [x] 建立 `components/CategoryFilter.vue`
+  - [x] 「全部」選項 + 各分類 tab / chip
+  - [x] 選取後 emit `filter-change` 事件並更新筆記清單
+- [x] 修改 `components/NoteEditor.vue`
+  - [x] 加入分類 `<select>` 或 combobox，列出所有分類（含「未分類」選項）
+  - [x] 儲存時帶入選取的 `categoryId`
+- [x] 修改 `components/NoteItem.vue`
+  - [x] 筆記卡片上顯示所屬分類名稱 badge（未分類則不顯示）
+- [x] 更新 `entrypoints/sidepanel/views/HomeView.vue`
+  - [x] 加入 CategoryFilter，依 activeCategory 過濾傳給 NoteList 的筆記清單
+  - [x] 提供入口開啟 CategoryManager（例如設定按鈕）

@@ -3,9 +3,13 @@
 
 <template>
   <nav>
-    <RouterLink :to="{ name: 'home' }">Home</RouterLink>
+    <RouterLink :to="{ name: 'home' }">
+      Home
+    </RouterLink>
     <span> | </span>
-    <RouterLink :to="{ name: 'about' }">About</RouterLink>
+    <RouterLink :to="{ name: 'about' }">
+      About
+    </RouterLink>
   </nav>
   <RouterView />
 </template>

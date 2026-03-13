@@ -22,7 +22,3 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
-
-.claude
-skills-lock.json
-docs/

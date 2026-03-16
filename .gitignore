@@ -22,3 +22,7 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Local env files
+.env
+.env.local

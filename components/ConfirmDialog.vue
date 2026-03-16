@@ -1,7 +1,23 @@
 <script lang="ts" setup>
-defineProps<{
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogRoot,
+  AlertDialogTitle,
+} from 'reka-ui'
+
+withDefaults(defineProps<{
+  open?: boolean
+  title?: string
   message: string
-}>()
+}>(), {
+  open: true,
+  title: '',
+})
 
 const emit = defineEmits<{
   confirm: []
@@ -10,31 +26,47 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-    <div class="w-72 rounded-lg bg-white p-5 shadow-lg">
-      <p class="mb-4 text-sm text-gray-700">
-        {{ message }}
-      </p>
-      <div class="flex justify-end gap-2">
-        <button
-          class="
-            rounded-sm border border-gray-300 px-3 py-1 text-sm
-            hover:bg-gray-100
-          "
-          @click="emit('cancel')"
+  <AlertDialogRoot :open="open">
+    <AlertDialogPortal>
+      <AlertDialogOverlay class="fixed inset-0 z-50 bg-black/40" />
+      <AlertDialogContent
+        class="
+          fixed top-1/2 left-1/2 z-50 w-72 -translate-1/2 rounded-lg bg-white
+          p-5 shadow-lg
+        "
+      >
+        <AlertDialogTitle
+          v-if="title"
+          class="mb-1 text-sm font-semibold text-gray-800"
         >
-          Cancel
-        </button>
-        <button
-          class="
-            rounded-sm bg-red-500 px-3 py-1 text-sm text-white
-            hover:bg-red-600
-          "
-          @click="emit('confirm')"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
+          {{ title }}
+        </AlertDialogTitle>
+        <AlertDialogDescription class="mb-4 text-sm text-gray-700">
+          {{ message }}
+        </AlertDialogDescription>
+        <div class="flex justify-end gap-2">
+          <AlertDialogCancel
+            data-testid="cancel-btn"
+            class="
+              rounded-sm border border-gray-300 px-3 py-1 text-sm
+              hover:bg-gray-100
+            "
+            @click="emit('cancel')"
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            data-testid="confirm-btn"
+            class="
+              rounded-sm bg-red-500 px-3 py-1 text-sm text-white
+              hover:bg-red-600
+            "
+            @click="emit('confirm')"
+          >
+            Delete
+          </AlertDialogAction>
+        </div>
+      </AlertDialogContent>
+    </AlertDialogPortal>
+  </AlertDialogRoot>
 </template>

@@ -28,15 +28,20 @@ pnpm test -- --run <pattern>  # Run a single test file/suite
 - `content.ts` — Content script injected on google.com (minimal)
 
 ### State management (`stores/`)
-Single Pinia store (`useNotesStore`) using the Composition API style. Notes are held in memory only — the `storage` manifest permission is declared but persistence is not yet implemented.
+Two Pinia stores, both using the Composition API style. State is held in memory only — persistence is not yet implemented.
 
+**`useNotesStore`** (`stores/notes.ts`)
 ```typescript
 interface Note {
-  id: string        // crypto.randomUUID()
-  text: string      // trimmed on save
-  createdAt: number // Unix timestamp, used for newest-first sort
+  id: string           // crypto.randomUUID()
+  title: string        // trimmed on save
+  text: string         // trimmed on save
+  createdAt: number    // Unix timestamp, used for newest-first sort
+  categoryId: string | null
 }
 ```
+
+**`useCategoriesStore`** (`stores/categories.ts`) — manages `Category[]` with duplicate-name validation. Deleting a category calls `clearCategoryFromNotes` on the notes store to null out references.
 
 ### Routing
 Vue Router 4 with **hash history** mode (required for browser extension side panels — HTML5 history doesn't work in extension pages).

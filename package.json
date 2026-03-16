@@ -30,6 +30,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@vitejs/devtools": "0.0.0-alpha.34",
     "@vitejs/plugin-vue": "^6.0.4",
+    "@vue/test-utils": "^2.4.6",
     "@wxt-dev/module-vue": "^1.0.3",
     "eslint": "^10.0.3",
     "eslint-plugin-better-tailwindcss": "^4.3.2",

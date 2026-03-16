@@ -193,41 +193,41 @@ reka-ui 元件結構：
 
 ### `ConfirmDialog.vue` 重寫（TDD）
 
-- [ ] 建立 `components/ConfirmDialog.test.ts`，撰寫失敗測試（TDD red）
-  - [ ] 測試 `open: false` 時 Dialog 不顯示
-  - [ ] 測試 `open: true` 時 `title` 與 `message` 正確渲染
-  - [ ] 測試點擊確認按鈕時 emit `confirm`
-  - [ ] 測試點擊取消按鈕時 emit `cancel`
-- [ ] 以 `AlertDialogRoot` 重寫 `components/ConfirmDialog.vue`，使所有測試通過（TDD green）
+- [x] 建立 `components/ConfirmDialog.test.ts`，撰寫失敗測試（TDD red）
+  - [x] 測試 `open: false` 時 Dialog 不顯示
+  - [x] 測試 `open: true` 時 `title` 與 `message` 正確渲染
+  - [x] 測試點擊確認按鈕時 emit `confirm`
+  - [x] 測試點擊取消按鈕時 emit `cancel`
+- [x] 以 `AlertDialogRoot` 重寫 `components/ConfirmDialog.vue`，使所有測試通過（TDD green）
 
 ### `CategoryFilter.vue` 重寫（TDD）
 
-- [ ] 建立 `components/CategoryFilter.test.ts`，撰寫失敗測試（TDD red）
-  - [ ] 測試預設渲染「全部」按鈕，及每個分類各一個 ToggleGroupItem
-  - [ ] 測試 `modelValue: null` 時「全部」按鈕處於 active 狀態（`data-state="on"`）
-  - [ ] 測試點擊分類按鈕後 emit `update:modelValue` 並帶入對應 categoryId
-  - [ ] 測試點擊「全部」按鈕後 emit `update:modelValue` 並帶入 `null`
-- [ ] 以 `ToggleGroupRoot` / `ToggleGroupItem` 重寫 `components/CategoryFilter.vue`，使所有測試通過（TDD green）
+- [x] 建立 `components/CategoryFilter.test.ts`，撰寫失敗測試（TDD red）
+  - [x] 測試預設渲染「全部」按鈕，及每個分類各一個 ToggleGroupItem
+  - [x] 測試 `modelValue: null` 時「全部」按鈕處於 active 狀態（`data-state="on"`）
+  - [x] 測試點擊分類按鈕後 emit `update:modelValue` 並帶入對應 categoryId
+  - [x] 測試點擊「全部」按鈕後 emit `update:modelValue` 並帶入 `null`
+- [x] 以 `ToggleGroupRoot` / `ToggleGroupItem` 重寫 `components/CategoryFilter.vue`，使所有測試通過（TDD green）
 
 ### `NoteEditor.vue` — Select 替換（TDD）
 
-- [ ] 在 `components/NoteEditor.test.ts` 補充測試（TDD red）
-  - [ ] 測試分類選擇器渲染 `SelectTrigger`（以 `data-testid` 或 role 辨識）
-  - [ ] 測試「未分類」為預設選項（`selectedCategoryId` 為 `null`）
-  - [ ] 測試選擇分類後 emit `save` 帶入正確 `categoryId`
-- [ ] 以 `SelectRoot` 系列元件取代 `<select>`，使所有測試通過（TDD green）
-- [ ] 為 Textarea 與 Select 加入 `Label` 元件
+- [x] 在 `components/NoteEditor.test.ts` 補充測試（TDD red）
+  - [x] 測試分類選擇器渲染 `SelectTrigger`（以 `data-testid` 或 role 辨識）
+  - [x] 測試「未分類」為預設選項（`selectedCategoryId` 為 `null`）
+  - [x] 測試選擇分類後 emit `save` 帶入正確 `categoryId`
+- [x] 以 `SelectRoot` 系列元件取代 `<select>`，使所有測試通過（TDD green）
+- [x] 為 Textarea 與 Select 加入 `Label` 元件
 
 ### `CategoryManager.vue` — Label 整合
 
-- [ ] 為分類名稱 `<input>` 加入 `Label` 元件（`for` / `id` 對應）
-- [ ] 確認現有 `CategoryManager` 測試仍全數通過
+- [x] 為分類名稱 `<input>` 加入 `Label` 元件（`for` / `id` 對應）
+- [x] 確認現有 `CategoryManager` 測試仍全數通過
 
 ### 驗證
 
-- [ ] 執行 `pnpm test`，確認所有測試通過（包含既有 Phase 1、2 測試）
-- [ ] 執行 `pnpm compile`，確認 TypeScript 無型別錯誤
-- [ ] 執行 `pnpm lint`，確認無 ESLint 違規
+- [x] 執行 `pnpm test`，確認所有測試通過（包含既有 Phase 1、2 測試）
+- [x] 執行 `pnpm compile`，確認 TypeScript 無型別錯誤
+- [x] 執行 `pnpm lint`，確認無 ESLint 違規
 
 ---
 
@@ -235,8 +235,8 @@ reka-ui 元件結構：
 
 > 以下項目需要手動在瀏覽器中驗證 reka-ui 元件的互動行為。
 
-- [ ] **Select 鍵盤操作**：在「新增筆記」的分類選擇器，使用 Tab 聚焦、Enter 展開、方向鍵選擇、Enter 確認，確認行為正確
-- [ ] **AlertDialog 鍵盤操作**：觸發刪除確認 Dialog，確認 Escape 鍵可取消，Tab 鍵可在「取消」與「確認」按鈕間切換
-- [ ] **ToggleGroup 鍵盤操作**：在分類篩選列，使用方向鍵切換分類，確認 `activeCategory` 正確更新
-- [ ] **無障礙驗證**：使用瀏覽器 Accessibility Inspector 確認 AlertDialog 有正確的 `role="alertdialog"`、Select 有正確的 `role="combobox"` 與 `aria-*` 屬性
-- [ ] **視覺回歸**：確認所有替換後的元件在 Chrome 側邊欄中視覺呈現與 Phase 1、2 完成時一致
+- [x] **Select 鍵盤操作**：在「新增筆記」的分類選擇器，使用 Tab 聚焦、Enter 展開、方向鍵選擇、Enter 確認，確認行為正確
+- [x] **AlertDialog 鍵盤操作**：觸發刪除確認 Dialog，確認 Escape 鍵可取消，Tab 鍵可在「取消」與「確認」按鈕間切換
+- [x] **ToggleGroup 鍵盤操作**：在分類篩選列，使用方向鍵切換分類，確認 `activeCategory` 正確更新
+- [x] **無障礙驗證**：使用瀏覽器 Accessibility Inspector 確認 AlertDialog 有正確的 `role="alertdialog"`、Select 有正確的 `role="combobox"` 與 `aria-*` 屬性
+- [x] **視覺回歸**：確認所有替換後的元件在 Chrome 側邊欄中視覺呈現與 Phase 1、2 完成時一致

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 
 export interface Note {
   id: string
+  title: string
   text: string
   createdAt: number
   categoryId: string | null
@@ -15,8 +16,10 @@ export const useNotesStore = defineStore('notes', () => {
     notes.value.toSorted((a, b) => b.createdAt - a.createdAt),
   )
 
+  const notesCount = computed(() => notes.value.length)
+
   let _lastTs = 0
-  function addNote(text: string, categoryId: string | null = null): boolean {
+  function addNote(text: string, categoryId: string | null = null, title: string = ''): boolean {
     const trimmed = text.trim()
     if (!trimmed)
       return false
@@ -24,6 +27,7 @@ export const useNotesStore = defineStore('notes', () => {
     _lastTs = now > _lastTs ? now : _lastTs + 1
     notes.value.push({
       id: crypto.randomUUID(),
+      title: title.trim(),
       text: trimmed,
       createdAt: _lastTs,
       categoryId,
@@ -31,7 +35,7 @@ export const useNotesStore = defineStore('notes', () => {
     return true
   }
 
-  function updateNote(id: string, text: string, categoryId?: string | null): boolean {
+  function updateNote(id: string, text: string, categoryId?: string | null, title?: string): boolean {
     const trimmed = text.trim()
     if (!trimmed)
       return false
@@ -41,6 +45,8 @@ export const useNotesStore = defineStore('notes', () => {
     note.text = trimmed
     if (categoryId !== undefined)
       note.categoryId = categoryId
+    if (title !== undefined)
+      note.title = title.trim()
     return true
   }
 
@@ -61,5 +67,14 @@ export const useNotesStore = defineStore('notes', () => {
     }
   }
 
-  return { notes, sortedNotes, addNote, updateNote, deleteNote, notesByCategory, clearCategoryFromNotes }
+  return {
+    notes,
+    sortedNotes,
+    notesCount,
+    addNote,
+    updateNote,
+    deleteNote,
+    notesByCategory,
+    clearCategoryFromNotes,
+  }
 })

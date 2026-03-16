@@ -1,3 +1,38 @@
 @import "tailwindcss";
 
 @plugin "@iconify/tailwind4";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-50: #f1f8f4;
+  --color-brand-100: #ddeee4;
+  --color-brand-200: #bdddcc;
+  --color-brand-300: #92c3ac;
+  --color-brand-400: #63a487;
+  --color-brand-500: #42876b;
+  --color-brand-600: #306b55;
+  --color-brand-700: #285a48;
+  --color-brand-800: #204538;
+  --color-brand-900: #1b392f;
+  --color-brand-950: #0e201b;
+
+  --color-text-base: theme("colors.brand.950");
+  --color-text-muted: theme("colors.gray.400");
+  --color-text-inverse: theme("colors.white");
+
+  --color-success: theme("colors.green.500");
+  --color-warning: theme("colors.amber.500");
+  --color-danger: theme("colors.red.500");
+}
+
+/* Dark mode */
+.dark {
+  --color-text-base: theme("colors.gray.200");
+  --color-text-muted: theme("colors.gray.500");
+  --color-text-inverse: theme("colors.white");
+
+  --color-success: theme("colors.green.400");
+  --color-warning: theme("colors.amber.400");
+  --color-danger: theme("colors.red.400");
+}

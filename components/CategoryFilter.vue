@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui'
 import { useCategoriesStore } from '../stores/categories'
 
 defineProps<{ modelValue: string | null }>()
@@ -11,26 +12,39 @@ const categoriesStore = useCategoriesStore()
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-1">
-    <button
-      class="rounded-sm px-2 py-0.5 text-xs transition-colors"
-      :class="modelValue === null
-        ? 'bg-blue-500 text-white'
-        : 'border border-gray-300 text-gray-600 hover:bg-gray-100'"
-      @click="emit('update:modelValue', null)"
+  <ToggleGroupRoot
+    type="single"
+    class="flex flex-wrap gap-1"
+    :model-value="modelValue ?? 'all'"
+    @update:model-value="val => emit('update:modelValue', val === 'all' ? null : (typeof val === 'string' ? val : null))"
+  >
+    <ToggleGroupItem
+      value="all"
+      data-testid="filter-item"
+      class="
+        rounded-sm px-2 py-0.5 text-xs transition-colors
+        data-[state=off]:border data-[state=off]:border-gray-300
+        data-[state=off]:text-gray-600
+        data-[state=off]:hover:bg-gray-100
+        data-[state=on]:bg-brand-600 data-[state=on]:text-white
+      "
     >
       All
-    </button>
-    <button
+    </ToggleGroupItem>
+    <ToggleGroupItem
       v-for="cat in categoriesStore.categories"
       :key="cat.id"
-      class="rounded-sm px-2 py-0.5 text-xs transition-colors"
-      :class="modelValue === cat.id
-        ? 'bg-blue-500 text-white'
-        : 'border border-gray-300 text-gray-600 hover:bg-gray-100'"
-      @click="emit('update:modelValue', cat.id)"
+      :value="cat.id"
+      data-testid="filter-item"
+      class="
+        rounded-sm px-2 py-0.5 text-xs transition-colors
+        data-[state=off]:border data-[state=off]:border-gray-300
+        data-[state=off]:text-gray-600
+        data-[state=off]:hover:bg-gray-100
+        data-[state=on]:bg-brand-600 data-[state=on]:text-white
+      "
     >
       {{ cat.name }}
-    </button>
-  </div>
+    </ToggleGroupItem>
+  </ToggleGroupRoot>
 </template>

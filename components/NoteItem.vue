@@ -40,24 +40,32 @@ function confirmDelete() {
 <template>
   <div
     class="
-      group flex items-start gap-2 rounded-sm border border-gray-200 p-3
+      group flex flex-col gap-2 rounded-sm border border-gray-200 p-3
       hover:bg-gray-50
     "
   >
-    <div class="flex min-w-0 flex-1 flex-col gap-1">
+    <!-- Note's content -->
+    <div class="flex min-w-0 flex-col gap-1">
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-medium text-text-base">{{ note.title || 'Untitled' }}</span>
+        <span
+          v-if="note.categoryId"
+          class="
+            w-fit rounded-sm bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700
+          "
+        >
+          {{ categoriesStore.categoryById(note.categoryId)?.name }}
+        </span>
+      </div>
       <p class="line-clamp-4 text-sm wrap-break-word text-gray-800">
         {{ note.text }}
       </p>
-      <span
-        v-if="note.categoryId"
-        class="w-fit rounded-sm bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700"
-      >
-        {{ categoriesStore.categoryById(note.categoryId)?.name }}
-      </span>
     </div>
+
+    <!-- Actions -->
     <div
       class="
-        flex shrink-0 flex-col gap-1 opacity-0 transition-opacity
+        flex flex-row gap-1 self-end opacity-0 transition-opacity
         group-hover:opacity-100
       "
     >
@@ -94,7 +102,8 @@ function confirmDelete() {
   </div>
 
   <ConfirmDialog
-    v-if="showConfirm"
+    :open="showConfirm"
+    title="Delete note"
     message="Delete this note? This cannot be undone."
     @confirm="confirmDelete"
     @cancel="showConfirm = false"

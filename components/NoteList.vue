@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import type { Note } from '../stores/notes'
+import type { Note } from '@/stores/notes'
+import { useTemplateRef } from 'vue'
 import NoteItem from './NoteItem.vue'
 
 defineProps<{ notes: Note[] }>()
@@ -8,6 +9,9 @@ const emit = defineEmits<{
   edit: [id: string]
   delete: [id: string]
 }>()
+
+const emptyStateEl = useTemplateRef<HTMLDivElement>('empty-state')
+defineExpose({ emptyStateEl })
 </script>
 
 <template>
@@ -21,11 +25,14 @@ const emit = defineEmits<{
         @delete="emit('delete', $event)"
       />
     </template>
-    <p
+    <div
       v-else
-      class="text-center text-sm text-gray-400"
+      ref="empty-state"
+      class="flex flex-col items-center gap-1 pt-2"
     >
-      No notes yet. Click "New Note" to get started.
-    </p>
+      <p class="text-center text-sm text-text-muted">
+        No notes yet. Click "+" to add your first note.
+      </p>
+    </div>
   </div>
 </template>

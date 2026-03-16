@@ -162,6 +162,44 @@ describe('useNotesStore', () => {
     })
   })
 
+  describe('addNote with title', () => {
+    it('stores title when provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello', null, 'My Title')
+      expect(store.notes[0].title).toBe('My Title')
+    })
+
+    it('defaults title to empty string when not provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello')
+      expect(store.notes[0].title).toBe('')
+    })
+
+    it('trims title on save', () => {
+      const store = useNotesStore()
+      store.addNote('hello', null, '  padded  ')
+      expect(store.notes[0].title).toBe('padded')
+    })
+  })
+
+  describe('updateNote with title', () => {
+    it('updates title when provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello', null, 'Old Title')
+      const id = store.notes[0].id
+      store.updateNote(id, 'hello', null, 'New Title')
+      expect(store.notes[0].title).toBe('New Title')
+    })
+
+    it('leaves title unchanged when not provided', () => {
+      const store = useNotesStore()
+      store.addNote('hello', null, 'Keep Me')
+      const id = store.notes[0].id
+      store.updateNote(id, 'updated')
+      expect(store.notes[0].title).toBe('Keep Me')
+    })
+  })
+
   describe('sortedNotes getter', () => {
     it('returns notes sorted newest-first by createdAt', () => {
       const store = useNotesStore()

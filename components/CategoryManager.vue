@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { Label } from 'reka-ui'
 import { ref } from 'vue'
 import { useCategoriesStore } from '../stores/categories'
 import { useNotesStore } from '../stores/notes'
@@ -52,26 +53,35 @@ function deleteMessage() {
     </h2>
 
     <form
-      class="flex gap-2"
+      class="flex flex-col gap-1.5"
       @submit.prevent="submit"
     >
-      <input
-        v-model="newName"
-        class="
-          flex-1 rounded-sm border border-gray-300 px-2 py-1 text-sm
-          focus:ring-2 focus:ring-blue-400 focus:outline-none
-        "
-        placeholder="New category name…"
+      <Label
+        for="category-input"
+        class="text-xs font-medium text-gray-600"
       >
-      <button
-        type="submit"
-        class="
-          rounded-sm bg-blue-500 px-3 py-1 text-sm text-white
-          hover:bg-blue-600
-        "
-      >
-        Add
-      </button>
+        Category name
+      </Label>
+      <div class="flex gap-2">
+        <input
+          id="category-input"
+          v-model="newName"
+          class="
+            flex-1 rounded-sm border border-gray-300 px-2 py-1 text-sm
+            focus:ring-2 focus:ring-blue-400 focus:outline-none
+          "
+          placeholder="New category name…"
+        >
+        <button
+          type="submit"
+          class="
+            rounded-sm bg-blue-500 px-3 py-1 text-sm text-white
+            hover:bg-blue-600
+          "
+        >
+          Add
+        </button>
+      </div>
     </form>
 
     <p
@@ -111,7 +121,8 @@ function deleteMessage() {
     </p>
 
     <ConfirmDialog
-      v-if="pendingDeleteId"
+      :open="!!pendingDeleteId"
+      title="Delete category"
       :message="deleteMessage()"
       @confirm="confirmDelete"
       @cancel="cancelDelete"

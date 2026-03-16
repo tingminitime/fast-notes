@@ -4,7 +4,8 @@
       "mcp__chrome-devtools__list_pages",
       "mcp__chrome-devtools__take_screenshot",
       "Bash(pnpm test:*)",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "mcp__context7__resolve-library-id"
     ]
   }
 }

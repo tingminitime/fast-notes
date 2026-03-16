@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "6935586ef3ab02e18747a4477d396e692bc96e8f28b0d95b374ffc37fce74cda"
     },
+    "context7-cli": {
+      "source": "upstash/context7",
+      "sourceType": "github",
+      "computedHash": "2c09d102a9a6c5e6a06e2cc8a5641947270aa977e8e37c7e532719badf1575e6"
+    },
     "firebase-auth-basics": {
       "source": "firebase/skills",
       "sourceType": "github",

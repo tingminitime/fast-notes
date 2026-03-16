@@ -44,6 +44,8 @@ Vue Router 4 with **hash history** mode (required for browser extension side pan
 ### Styling
 Tailwind CSS v4 with the Iconify plugin for icons. Imported via `entrypoints/sidepanel/main.css`.
 
+UI components are built with **Reka UI** (`reka-ui`) — a headless, unstyled component library for Vue 3. Reka UI provides accessible primitives (dialogs, dropdowns, etc.) that are styled with Tailwind classes.
+
 ### Key config files
 - `wxt.config.ts` — WXT manifest, modules (Vue, DevTools, Tailwind), Vite plugins
 - `vitest.config.ts` — jsdom environment, WXT Vitest plugin, Vue plugin

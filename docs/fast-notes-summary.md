@@ -27,6 +27,8 @@
 - Pinia (狀態管理)
 - VueUse (組合式工具函式庫)
 - Tailwind CSS v4 (樣式)
+- Reka UI (UI 元件庫)
+- Iconify (圖示)
 
 ### 測試
 - Vitest (單元測試)

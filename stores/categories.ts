@@ -40,5 +40,11 @@ export const useCategoriesStore = defineStore('categories', () => {
     }
   }
 
-  return { categories, error, categoryById, addCategory, deleteCategory }
+  return {
+    categories,
+    error,
+    categoryById,
+    addCategory,
+    deleteCategory,
+  }
 })

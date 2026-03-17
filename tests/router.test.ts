@@ -1,11 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('wxt/browser', () => ({ browser: { identity: { getAuthToken: vi.fn() } } }))
 import { createRouter, createWebHashHistory } from 'vue-router'
 import router from '../entrypoints/sidepanel/router'
 
 describe('sidepanel router', () => {
   describe('route configuration', () => {
-    it('has exactly one route', () => {
-      expect(router.getRoutes()).toHaveLength(1)
+    it('has a home route and a login route', () => {
+      expect(router.getRoutes()).toHaveLength(2)
     })
 
     it('has a home route at /', () => {

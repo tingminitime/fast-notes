@@ -25,4 +25,5 @@ web-ext.config.ts
 
 # Local env files
 .env
-.env.local
+.env.*
+!.env.example

@@ -19,10 +19,12 @@
 
 ```
 1. WHEN the user clicks the 'Sign in with Google' button,
-   THE EXTENSION SHALL initiate the Firebase Authentication OAuth flow.
+   THE EXTENSION SHALL initiate the Google OAuth flow via the Chrome Identity API
+   (browser.identity.getAuthToken) and sign in to Firebase with the returned credential.
 
 2. WHEN authentication succeeds,
-   THE EXTENSION SHALL store the session credentials securely and display the authenticated user's profile name.
+   THE EXTENSION SHALL automatically navigate to the note list and display
+   the authenticated user's profile name in the header.
 
 3. IF the authentication flow fails or is cancelled by the user,
    THEN THE EXTENSION SHALL display an appropriate error or status message and remain on the login screen.
@@ -66,41 +68,42 @@ pnpm add firebase
 
 ### Firebase 設定
 
-- [ ] 在 Firebase Console 建立專案，啟用 Authentication（Google provider）
-- [ ] 將 Firebase 設定（`firebaseConfig`）存為環境變數（`.env.local`）
-- [ ] 建立 `firebase.config.ts`，初始化 Firebase app 與 Auth 實例
-- [ ] 將 Firebase 設定相關金鑰加入 `.gitignore`（確保 `.env.local` 已被忽略）
+- [x] 在 Firebase Console 建立專案，啟用 Authentication（Google provider）
+- [x] 將 Firebase 設定（`firebaseConfig`）存為環境變數（`.env.development.local`）
+- [x] 建立 `firebase.config.ts`，初始化 Firebase app 與 Auth 實例
+- [x] 將 Firebase 設定相關金鑰加入 `.gitignore`（確保 `.env.*.local` 已被忽略）
 
 ### Auth Store（`stores/auth.ts`）
 
-- [ ] 建立 `stores/auth.test.ts`，撰寫失敗測試（TDD red，mock `firebase/auth`）
-  - [ ] 測試初始 state：`user` 為 `null`，`isLoading` 為 `false`
-  - [ ] 測試 `signInWithGoogle` 成功後 `user` 更新為 mock user 物件
-  - [ ] 測試 `signInWithGoogle` 失敗後 `error` 更新，`user` 仍為 `null`
-  - [ ] 測試 `signOut` 後 `user` 變為 `null`
-- [ ] 實作 `stores/auth.ts`，使所有測試通過（TDD green）
-  - [ ] `state`: `user: User | null`, `isLoading: boolean`, `error: string | null`
-  - [ ] `getter`: `isAuthenticated`, `uid`
-  - [ ] `action`: `signInWithGoogle()` — 呼叫 `signInWithPopup`
-  - [ ] `action`: `signOut()` — 呼叫 `firebaseSignOut`，清空本地 notes / categories store
-  - [ ] `onAuthStateChanged` 監聽器於 store 初始化時啟動
+- [x] 建立 `stores/auth.test.ts`，撰寫失敗測試（TDD red，mock `firebase/auth`）
+  - [x] 測試初始 state：`user` 為 `null`，`isLoading` 為 `false`
+  - [x] 測試 `signInWithGoogle` 成功後 `user` 更新為 mock user 物件
+  - [x] 測試 `signInWithGoogle` 失敗後 `error` 更新，`user` 仍為 `null`
+  - [x] 測試 `signOut` 後 `user` 變為 `null`
+- [x] 實作 `stores/auth.ts`，使所有測試通過（TDD green）
+  - [x] `state`: `user: User | null`, `isLoading: boolean`, `error: string | null`
+  - [x] `getter`: `isAuthenticated`, `uid`
+  - [x] `action`: `signInWithGoogle()` — 使用 `browser.identity.getAuthToken` 取得 OAuth access token，再以 `signInWithCredential` 登入 Firebase（避免 MV3 CSP 限制）
+  - [x] `action`: `signOut()` — 呼叫 `firebaseSignOut`，清空本地 notes / categories store
+  - [x] `onAuthStateChanged` 監聽器於 store 初始化時啟動
 
 ### 路由保護
 
-- [ ] 更新 `entrypoints/sidepanel/router.ts`
-  - [ ] 新增 `/login` 路由 → `LoginView`
-  - [ ] 加入 navigation guard：未登入時重導至 `/login`；已登入時 `/login` 重導至 `/`
+- [x] 更新 `entrypoints/sidepanel/router.ts`
+  - [x] 新增 `/login` 路由 → `LoginView`
+  - [x] 加入 navigation guard：未登入時重導至 `/login`；已登入時 `/login` 重導至 `/`
 
 ### UI
 
-- [ ] 建立 `entrypoints/sidepanel/views/LoginView.vue`
-  - [ ] 顯示 Fast Notes logo / 標題
-  - [ ]「Sign in with Google」按鈕
-  - [ ] 載入中 spinner（`isLoading` 為 true 時）
-  - [ ] 錯誤訊息區塊（`error` 有值時顯示）
-- [ ] 更新 `entrypoints/sidepanel/App.vue`
-  - [ ] 已登入時於 header 顯示使用者頭像或名稱
-  - [ ] 提供「登出」按鈕，點擊後呼叫 `signOut`
+- [x] 建立 `entrypoints/sidepanel/views/LoginView.vue`
+  - [x] 顯示 Fast Notes logo / 標題
+  - [x]「Sign in with Google」按鈕
+  - [x] 載入中 spinner（`isLoading` 為 true 時）
+  - [x] 錯誤訊息區塊（`error` 有值時顯示）
+  - [x] 監聽 `isAuthenticated`，登入成功後自動導向 `/`（`watch` on auth state）
+- [x] 更新 `entrypoints/sidepanel/App.vue`
+  - [x] 已登入時於 header 顯示使用者頭像或名稱
+  - [x] 提供「登出」按鈕，點擊後呼叫 `signOut`
 
 ---
 
@@ -108,9 +111,9 @@ pnpm add firebase
 
 > 以下項目需要手動在瀏覽器中驗證，無法以 Vitest 自動化測試。
 
-- [ ] 安裝開發版擴充功能（`pnpm dev`），在 Chrome 側邊欄開啟 Fast Notes
-- [ ] **登入流程**：點擊「Sign in with Google」，確認 OAuth popup 正確彈出
-- [ ] **登入成功**：完成 Google 帳號選擇後，確認跳轉至筆記頁並顯示使用者名稱
+- [ ] 在正常 Chrome 中載入 `.output/chrome-mv3-dev/`（OAuth 測試需要真實 Chrome，不能用 `pnpm dev` 的測試瀏覽器）
+- [ ] **登入流程**：點擊「Sign in with Google」，確認 Chrome 原生帳號選擇視窗彈出
+- [ ] **登入成功**：選擇 Google 帳號後，確認自動跳轉至筆記頁並顯示使用者名稱
 - [ ] **登入取消**：在 OAuth popup 點擊取消，確認停留在登入頁並顯示適當訊息
 - [ ] **Session 持久性**：關閉並重新開啟側邊欄，確認登入狀態仍保留（不需重新登入）
 - [ ] **登出流程**：點擊登出按鈕，確認跳轉回登入頁，本地筆記清空

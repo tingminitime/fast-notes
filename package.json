@@ -15,7 +15,8 @@
     "postinstall": "wxt prepare",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "vitest"
+    "test": "vitest",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "firebase": "^12.10.0",
@@ -29,6 +30,7 @@
     "@iconify-json/material-icon-theme": "^1.2.56",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify/tailwind4": "^1.2.3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
     "@vitejs/devtools": "0.0.0-alpha.34",
     "@vitejs/plugin-vue": "^6.0.4",

@@ -1,9 +1,26 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useCategoriesStore } from './categories'
+
+const mockStore = new Map<string, any>()
+
+vi.mock('wxt/utils/storage', () => ({
+  storage: {
+    defineItem: (key: string, opts?: { fallback?: any }) => ({
+      key,
+      fallback: opts?.fallback,
+      getValue: vi.fn(async () => mockStore.get(key) ?? opts?.fallback),
+      setValue: vi.fn(async (val: any) => {
+        mockStore.set(key, val)
+      }),
+      watch: vi.fn(() => () => {}),
+    }),
+  },
+}))
 
 beforeEach(() => {
   setActivePinia(createPinia())
+  mockStore.clear()
 })
 
 describe('useCategoriesStore', () => {
@@ -78,6 +95,25 @@ describe('useCategoriesStore', () => {
     it('returns undefined for unknown id', () => {
       const store = useCategoriesStore()
       expect(store.categoryById('no-such-id')).toBeUndefined()
+    })
+  })
+
+  describe('persistence', () => {
+    it('hydrate() loads categories from storage', async () => {
+      const storedCategories = [{ id: '1', name: 'Work' }]
+      mockStore.set('local:categories', storedCategories)
+
+      const store = useCategoriesStore()
+      await store.hydrate()
+
+      expect(store.categories).toEqual(storedCategories)
+    })
+
+    it('hydrate() returns empty array when storage is empty', async () => {
+      const store = useCategoriesStore()
+      await store.hydrate()
+
+      expect(store.categories).toEqual([])
     })
   })
 })

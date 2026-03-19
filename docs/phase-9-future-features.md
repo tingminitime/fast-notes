@@ -1,4 +1,4 @@
-# Phase 8 — 後續規劃功能
+# Phase 9 — 後續規劃功能
 
 **前置功能需求**：
 - [Phase 1 — 側邊欄介面與筆記管理](./phase-1-notes-ui.md)（Markdown 預覽依賴筆記資料結構）

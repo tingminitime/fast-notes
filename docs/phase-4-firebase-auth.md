@@ -1,8 +1,8 @@
 # Phase 4 — Firebase 帳號登入
 
-**前置功能需求**：無（可與 Phase 1、2、3 並行開發，但 Phase 5、6 依賴本階段）
+**前置功能需求**：無（可與 Phase 1、2、3 並行開發，但 Phase 5、6、7 依賴本階段）
 
-本階段整合 Firebase Authentication，讓使用者以 Google 帳號登入並登出。登入後的 UID 將作為 Phase 6 金鑰衍生的依據，Firestore 同步（Phase 5）也需要有效 session。
+本階段整合 Firebase Authentication，讓使用者以 Google 帳號登入並登出。登入後的 UID 將作為 Phase 7 金鑰衍生的依據，Firestore 同步（Phase 6）也需要有效 session。
 
 ---
 

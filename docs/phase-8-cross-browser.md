@@ -1,12 +1,13 @@
-# Phase 7 — 跨瀏覽器支援
+# Phase 8 — 跨瀏覽器支援
 
 **前置功能需求**：
 - [Phase 1 — 側邊欄介面與筆記管理](./phase-1-notes-ui.md)
 - [Phase 2 — 分類管理](./phase-2-categories.md)
 - [Phase 3 — Reka UI 元件整合](./phase-3-reka-ui-integration.md)
 - [Phase 4 — Firebase 帳號登入](./phase-4-firebase-auth.md)
-- [Phase 5 — 雲端同步（Firestore）](./phase-5-cloud-sync.md)
-- [Phase 6 — 端到端加密](./phase-6-encryption.md)
+- [Phase 5 — 本地持久化與訪客模式](./phase-5-local-persistence.md)
+- [Phase 6 — 雲端同步（Firestore）](./phase-6-cloud-sync.md)
+- [Phase 7 — 端到端加密](./phase-7-encryption.md)
 
 本階段確認 Fast Notes 可在 Chrome、Firefox、Edge 三款瀏覽器上正確建置、安裝並完整運作。WXT 已提供跨瀏覽器建置指令，本階段重點為相容性驗證與修正。
 

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { useStorageSync } from '@/composables/useStorageSync'
 
 export interface Note {
   id: string
@@ -11,10 +12,12 @@ export interface Note {
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([])
+  const { hydrate } = useStorageSync('local:notes', notes, [])
 
-  const sortedNotes = computed(() =>
-    notes.value.toSorted((a, b) => b.createdAt - a.createdAt),
-  )
+  const sortedNotes = computed(() => {
+    const arr = Array.isArray(notes.value) ? notes.value : []
+    return arr.toSorted((a, b) => b.createdAt - a.createdAt)
+  })
 
   const notesCount = computed(() => notes.value.length)
 
@@ -76,5 +79,6 @@ export const useNotesStore = defineStore('notes', () => {
     deleteNote,
     notesByCategory,
     clearCategoryFromNotes,
+    hydrate,
   }
 })

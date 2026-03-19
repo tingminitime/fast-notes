@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useStorageSync } from '@/composables/useStorageSync'
 import { useNotesStore } from './notes'
 
 export interface Category {
@@ -9,6 +10,7 @@ export interface Category {
 
 export const useCategoriesStore = defineStore('categories', () => {
   const categories = ref<Category[]>([])
+  const { hydrate } = useStorageSync('local:categories', categories, [])
   const error = ref('')
 
   function categoryById(id: string): Category | undefined {
@@ -46,5 +48,6 @@ export const useCategoriesStore = defineStore('categories', () => {
     categoryById,
     addCategory,
     deleteCategory,
+    hydrate,
   }
 })

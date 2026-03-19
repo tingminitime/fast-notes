@@ -20,7 +20,7 @@ watch(() => auth.isAuthenticated, (isAuthenticated) => {
         Fast Notes
       </h1>
       <p class="mt-1 text-sm text-gray-500">
-        Sign in to sync your notes
+        Sign in to sync across devices
       </p>
     </div>
 
@@ -46,6 +46,13 @@ watch(() => auth.isAuthenticated, (isAuthenticated) => {
       ></span>
       Sign in with Google
     </button>
+
+    <RouterLink
+      :to="{ name: 'home' }"
+      class="text-sm text-gray-500 hover:text-gray-700"
+    >
+      Continue without signing in
+    </RouterLink>
 
     <p
       v-if="auth.error"

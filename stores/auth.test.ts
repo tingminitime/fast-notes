@@ -117,5 +117,27 @@ describe('useAuthStore', () => {
 
       expect(store.user).toBeNull()
     })
+
+    it('does not clear notes or categories on sign out', async () => {
+      vi.mocked(firebaseAuth.signOut).mockResolvedValueOnce(undefined)
+
+      const store = useAuthStore()
+      store.user = { uid: 'uid-123' } as any
+
+      const { useNotesStore } = await import('./notes')
+      const { useCategoriesStore } = await import('./categories')
+      const notesStore = useNotesStore()
+      const categoriesStore = useCategoriesStore()
+
+      notesStore.addNote('keep me')
+      categoriesStore.addCategory('Work')
+
+      await store.signOut()
+
+      expect(notesStore.notes).toHaveLength(1)
+      expect(notesStore.notes[0].text).toBe('keep me')
+      expect(categoriesStore.categories).toHaveLength(1)
+      expect(categoriesStore.categories[0].name).toBe('Work')
+    })
   })
 })

@@ -1,12 +1,13 @@
-# Phase 5 — 雲端同步（Firestore）
+# Phase 6 — 雲端同步（Firestore）
 
 **前置功能需求**：
 - [Phase 1 — 側邊欄介面與筆記管理](./phase-1-notes-ui.md)
 - [Phase 4 — Firebase 帳號登入](./phase-4-firebase-auth.md)
+- [Phase 5 — 本地持久化與訪客模式](./phase-5-local-persistence.md)
 
-本階段將 Phase 1 的本地筆記 store 串接 Cloud Firestore，實現登入使用者的筆記自動雲端同步與跨裝置即時更新。離線時本地變更將被佇列，待連線恢復後自動補送。
+本階段將 Phase 5 的本地持久化筆記 store 串接 Cloud Firestore，實現登入使用者的筆記自動雲端同步與跨裝置即時更新。離線時本地變更將被佇列，待連線恢復後自動補送。
 
-> **注意**：Phase 6（端到端加密）完成後，寫入 Firestore 的資料將改為密文。本階段先以明文同步驗證流程正確性。
+> **注意**：Phase 7（端到端加密）完成後，寫入 Firestore 的資料將改為密文。本階段先以明文同步驗證流程正確性。
 
 ---
 
@@ -42,7 +43,7 @@
 ```
 users/{uid}/notes/{noteId}
   - id: string
-  - text: string          // Phase 6 後改為 ciphertext
+  - text: string          // Phase 7 後改為 ciphertext
   - createdAt: number
   - categoryId: string | null
   - updatedAt: number     // server timestamp

@@ -1,8 +1,8 @@
-# Phase 6 — 端到端加密
+# Phase 7 — 端到端加密
 
 **前置功能需求**：
 - [Phase 4 — Firebase 帳號登入](./phase-4-firebase-auth.md)（需要 Firebase UID 作為金鑰衍生來源）
-- [Phase 5 — 雲端同步（Firestore）](./phase-5-cloud-sync.md)（加密後的密文才能寫入 Firestore）
+- [Phase 6 — 雲端同步（Firestore）](./phase-6-cloud-sync.md)（加密後的密文才能寫入 Firestore）
 
 本階段在 Firestore 讀寫流程中加入 Web Crypto API，以 PBKDF2 從 Firebase UID 衍生 AES-GCM 256-bit 金鑰，確保 Firestore 中儲存的資料皆為密文，解密完全在客戶端完成。
 

@@ -4,8 +4,6 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { browser } from 'wxt/browser'
 import { auth } from '../firebase.config'
-import { useCategoriesStore } from './categories'
-import { useNotesStore } from './notes'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
@@ -42,8 +40,6 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await firebaseSignOut(auth)
       user.value = null
-      useNotesStore().notes.splice(0)
-      useCategoriesStore().categories.splice(0)
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Sign out failed'

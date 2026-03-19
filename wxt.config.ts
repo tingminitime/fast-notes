@@ -4,6 +4,9 @@ import { defineConfig } from 'wxt'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
+  webExt: {
+    chromiumArgs: ['--remote-debugging-port=9222'],
+  },
   manifest: ({ mode }) => {
     const isDev = mode === 'development'
     const appName = isDev ? 'Fast Notes (Dev)' : 'Fast Notes'

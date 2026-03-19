@@ -5,16 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm dev              # Start dev server (Chrome)
-pnpm dev:firefox      # Start dev server (Firefox)
-pnpm build            # Build extension for Chrome
-pnpm build:firefox    # Build extension for Firefox
-pnpm zip              # Package as installable Chrome zip
-pnpm zip:firefox      # Package as installable Firefox zip
-pnpm compile          # TypeScript type check (vue-tsc --noEmit)
-pnpm lint             # Run ESLint
-pnpm lint:fix         # Auto-fix ESLint violations
-pnpm test             # Run all Vitest tests
+pnpm dev            # Start dev server (Open Chrome with ephemeral profile)
+pnpm dev:firefox    # Start dev server (Open Firefox with temporary profile)
+pnpm build          # Build extension for Chrome
+pnpm build:firefox  # Build extension for Firefox
+pnpm zip            # Package as installable Chrome zip
+pnpm zip:firefox    # Package as installable Firefox zip
+pnpm compile        # TypeScript type check (vue-tsc --noEmit)
+pnpm lint           # Run ESLint
+pnpm lint:fix       # Auto-fix ESLint violations
+pnpm test           # Run all Vitest tests
 pnpm test -- --run <pattern>  # Run a single test file/suite
 ```
 

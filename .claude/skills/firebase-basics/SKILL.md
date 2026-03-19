@@ -1,111 +1,52 @@
 ---
 name: firebase-basics
-description: Guide for setting up and using Firebase. Use this skill when the user is getting started with Firebase - setting up local environment, using Firebase for the first time, or adding Firebase to their app.
+description: Core principles and workflow for using Firebase. Make sure to ALWAYS use this skill whenever you are trying to use the Firebase CLI (`firebase`), build with Firebase, set up Firebase services, or use Firebase in any project, even if the user doesn't explicitly ask for Firebase basics.
 ---
-## Prerequisites
+# Prerequisites
 
-### Node.js and npm
-To use the Firebase CLI, you need Node.js (version 20+ required) and npm (which comes with Node.js).
+Please complete these setup steps before proceeding, and remember your progress to avoid repeating them in future interactions.
 
-**Recommended: Use a Node Version Manager**
-This avoids permission issues when installing global packages.
+1. **Local Environment Setup:** Verify the environment is properly set up so we can use Firebase tools:
+   - Run `npx -y firebase-tools@latest --version` to check if the Firebase CLI is installed.
+   - Verify if the Firebase MCP server is installed using your existing tools.
+   - If either of these checks fails, please use the `firebase-local-env-setup` skill to get the environment ready.
 
-1.  **Install a Node Version Manager:**
-    - Mac/Linux: Follow the installation instructions on the [official nvm repository](https://github.com/nvm-sh/nvm#installing-and-updating).
-    - Windows: Download [nvm-windows](https://github.com/coreybutler/nvm-windows/releases)
+2. **Authentication:**
+   Ensure you are logged in to Firebase so that commands have the correct permissions. Run `npx -y firebase-tools@latest login`. For environments without a browser (e.g., remote shells), use `npx -y firebase-tools@latest login --no-localhost`.
+   - The command should output the current user. 
+   - If you are not logged in, follow the interactive instructions from this command to authenticate.
 
-2.  **Install Node.js:**
-    ```bash
-    nvm install 24
-    nvm use 24
-    ```
+3. **Active Project:**
+   Most Firebase tasks require an active project context. Check the current project by running `npx -y firebase-tools@latest use`.
+   - If the command outputs `Active Project: <project-id>`, you can proceed with your task.
+   - If not, ask the user if they have an existing Firebase Project ID.
+     - If yes: Set it as the active project and add a default alias by running:
+       ```bash
+       npx -y firebase-tools@latest use --add <PROJECT_ID>
+       ```
+     - If no: Follow the project creation instructions in [references/firebase-project-create.md](references/firebase-project-create.md).
 
-**Alternative: Official Installer**
-Download and install the LTS version from [nodejs.org](https://nodejs.org/).
+# Firebase Usage Principles
 
-**Verify Installation:**
-```bash
-node --version
-npm --version
-```
+Please adhere to these principles when working with Firebase, as they ensure reliability and up-to-date project tools:
 
-## Core Workflow
+1. **Use npx for CLI commands:** To ensure you always use the latest version of the Firebase CLI, always prepend commands with `npx -y firebase-tools@latest` instead of just `firebase`. (e.g., use `npx -y firebase-tools@latest --version` instead of `firebase --version`).
+2. **Prioritize official knowledge:** For any Firebase-related knowledge, consult the `developerknowledge_search_documents` MCP tool before falling back to Google Search or your internal knowledge base. Including "Firebase" in your search query significantly improves relevance.
+3. **Follow Agent Skills for implementation guidance:** Skills provide opinionated workflows (CUJs), security rules, and best practices. Always consult them to understand *how* to implement Firebase features correctly instead of relying on general knowledge.
+4. **Use Firebase MCP Server tools instead of direct API calls:** Whenever you need to interact with remote Firebase APIs (such as fetching Crashlytics logs or executing Data Connect queries), use the tools provided by the Firebase MCP Server instead of attempting manual API calls.
+5. **Keep Plugin / Agent Skills updated:** Since Firebase best practices evolve quickly, remind the user to regularly check for and install updates to their Firebase plugin or Agent Skills, ensuring you both operate with the latest workflows. Similarly, if you encounter issues with outdated tools or commands, follow the steps below based on your agent environment:
+   - **Antigravity**: Follow [references/refresh-antigravity.md](references/refresh-antigravity.md)
+   - **Gemini CLI**: Follow [references/refresh-gemini-cli.md](references/refresh-gemini-cli.md)
+   - **Claude Code**: Follow [references/refresh-claude.md](references/refresh-claude.md)
+   - **Cursor**: Follow [references/refresh-cursor.md](references/refresh-cursor.md)
+   - **Others**: Follow [references/refresh-other.md](references/refresh-other-agents.md)
 
-### 1. Installation
+# References
 
-Install the Firebase CLI globally via npm:
+- **Initialize Firebase:** See [references/firebase-service-init.md](references/firebase-service-init.md) when you need to initialize new Firebase services using the CLI.
+- **Exploring Commands:** See [references/firebase-cli-guide.md](references/firebase-cli-guide.md) to discover and understand CLI functionality.
+- **SDK Setup:** For detailed guides on adding Firebase to a web app, see [references/web_setup.md](references/web_setup.md).
 
-```bash
-npm install -g firebase-tools
-```
+# Common Issues
 
-Verify installation:
-```bash
-firebase --version
-```
-
-### 2. Authentication
-
-Log in to Firebase:
-
-```bash
-firebase login
-```
-
-- This opens a browser for authentication.
-- For environments where localhost is not available (e.g., remote shell), use `firebase login --no-localhost`.
-
-### 3. Creating a Project
-
-To create a new Firebase project from the CLI:
-
-```bash
-firebase projects:create
-```
-
-You will be prompted to:
-1. Enter a Project ID (must be unique globally).
-2. Enter a display name.
-
-### 4. Initialization
-
-Initialize Firebase services in your project directory:
-
-```bash
-mkdir my-project
-cd my-project
-firebase init
-```
-
-The CLI will guide you through:
-- Selecting features (Firestore, Functions, Hosting, etc.).
-- Associating with an existing project or creating a new one.
-- Configuring files (firebase.json, .firebaserc).
-
-## Exploring Commands
-
-The Firebase CLI documents itself. Instruct the user to use help commands to discover functionality.
-
-- **Global Help**: List all available commands and categories.
-  ```bash
-  firebase --help
-  ```
-
-- **Command Help**: Get detailed usage for a specific command.
-  ```bash
-  firebase [command] --help
-  # Example:
-  firebase deploy --help
-  firebase firestore:indexes --help
-  ```
-
-## SDK Setup
-
-Detailed guides for adding Firebase to your app:
-
-- **Web**: See [references/web_setup.md](references/web_setup.md)
-
-## Common Issues
-
-- **Permission Denied (EACCES)**: If `npm install -g` fails, suggest using a node version manager (nvm) or `sudo` (caution advised).
-- **Login Issues**: If the browser doesn't open, try `firebase login --no-localhost`.
+- **Login Issues:** If the browser fails to open during the login step, use `npx -y firebase-tools@latest login --no-localhost` instead.

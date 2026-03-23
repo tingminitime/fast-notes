@@ -16,6 +16,8 @@ export interface Note {
   categoryId: string | null
 }
 
+const HTML_TAG_RE = /<[^>]*>/g
+
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([])
   const { hydrate, pause, resume } = useStorageSync('local:notes', notes, [])
@@ -48,11 +50,17 @@ export const useNotesStore = defineStore('notes', () => {
 
   const notesCount = computed(() => notes.value.length)
 
+  function isEffectivelyEmpty(text: string): boolean {
+    if (!text.trim())
+      return true
+    return text.replace(HTML_TAG_RE, '').trim().length === 0
+  }
+
   let _lastTs = 0
   function addNote(text: string, categoryId: string | null = null, title: string = ''): boolean {
-    const trimmed = text.trim()
-    if (!trimmed)
+    if (isEffectivelyEmpty(text))
       return false
+    const trimmed = text.trim()
     const now = Date.now()
     _lastTs = now > _lastTs ? now : _lastTs + 1
     const newNote: Note = {
@@ -72,9 +80,9 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   function updateNote(id: string, text: string, categoryId?: string | null, title?: string): boolean {
-    const trimmed = text.trim()
-    if (!trimmed)
+    if (isEffectivelyEmpty(text))
       return false
+    const trimmed = text.trim()
     const note = notes.value.find(n => n.id === id)
     if (!note)
       return false

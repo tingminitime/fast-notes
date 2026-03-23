@@ -20,6 +20,9 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/starter-kit": "^3.20.4",
+    "@tiptap/vue-3": "^3.20.4",
     "@vueuse/core": "^14.2.1",
     "firebase": "^12.10.0",
     "pinia": "^3.0.4",

@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import type { Note } from '../stores/notes'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useCategoriesStore } from '../stores/categories'
+import { toDisplayHtml, toPlainText } from '../utils/noteContent'
 import ConfirmDialog from './ConfirmDialog.vue'
 
 const props = defineProps<{ note: Note }>()
@@ -14,11 +15,12 @@ const emit = defineEmits<{
 const categoriesStore = useCategoriesStore()
 const showConfirm = ref(false)
 const copyState = ref<'idle' | 'success' | 'error'>('idle')
+const displayHtml = computed(() => toDisplayHtml(props.note.text))
 let copyTimer: ReturnType<typeof setTimeout> | null = null
 
 async function copyNote() {
   try {
-    await navigator.clipboard.writeText(props.note.text)
+    await navigator.clipboard.writeText(toPlainText(props.note.text))
     copyState.value = 'success'
   }
   catch {
@@ -59,9 +61,10 @@ function confirmDelete() {
           {{ categoriesStore.categoryById(note.categoryId)?.name }}
         </span>
       </div>
-      <p class="line-clamp-4 text-sm wrap-break-word text-gray-800">
-        {{ note.text }}
-      </p>
+      <div
+        class="note-preview line-clamp-4 text-sm wrap-break-word text-gray-800"
+        v-html="displayHtml"
+      ></div>
     </div>
 
     <!-- Actions -->
@@ -199,6 +202,13 @@ function confirmDelete() {
 </template>
 
 <style scoped>
+.note-preview :deep(p) {
+  margin: 0;
+}
+.note-preview :deep(p + p) {
+  margin-top: 0.15rem;
+}
+
 @keyframes pop {
   0% { transform: scale(0); opacity: 0; }
   60% { transform: scale(1.25); opacity: 1; }

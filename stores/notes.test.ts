@@ -69,6 +69,20 @@ describe('useNotesStore', () => {
       expect(result).toBe(false)
       expect(store.notes).toHaveLength(0)
     })
+
+    it('does not add note with Tiptap empty paragraph and returns false', () => {
+      const store = useNotesStore()
+      const result = store.addNote('<p></p>')
+      expect(result).toBe(false)
+      expect(store.notes).toHaveLength(0)
+    })
+
+    it('adds note with HTML content and stores it unchanged', () => {
+      const store = useNotesStore()
+      const result = store.addNote('<p>Hello</p>')
+      expect(result).toBe(true)
+      expect(store.notes[0].text).toBe('<p>Hello</p>')
+    })
   })
 
   describe('updateNote', () => {
@@ -94,6 +108,15 @@ describe('useNotesStore', () => {
       store.addNote('original')
       const id = store.notes[0].id
       const result = store.updateNote(id, '   ')
+      expect(result).toBe(false)
+      expect(store.notes[0].text).toBe('original')
+    })
+
+    it('returns false and does not update if text is Tiptap empty paragraph', () => {
+      const store = useNotesStore()
+      store.addNote('original')
+      const id = store.notes[0].id
+      const result = store.updateNote(id, '<p></p>')
       expect(result).toBe(false)
       expect(store.notes[0].text).toBe('original')
     })

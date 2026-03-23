@@ -30,7 +30,7 @@ describe('loginView', () => {
     router = createRouter({
       history: createWebHashHistory(),
       routes: [
-        { path: '/', name: 'home', component: { template: '<div />' } },
+        { path: '/', name: 'notes', component: { template: '<div />' } },
         { path: '/login', name: 'login', component: { template: '<div />' } },
       ],
     })

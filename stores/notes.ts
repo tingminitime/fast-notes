@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useStorageSync } from '@/composables/useStorageSync'
+import {
+  deleteNote as firestoreDeleteNote,
+  saveNote,
+  subscribeNotes,
+} from '../services/firestore'
 import { useAuthStore } from './auth'
 
 export interface Note {
@@ -16,12 +21,21 @@ export const useNotesStore = defineStore('notes', () => {
   const { hydrate, pause, resume } = useStorageSync('local:notes', notes, [])
 
   const authStore = useAuthStore()
+  let _unsubscribeNotes: (() => void) | null = null
+
   watch(() => authStore.isAuthenticated, async (isAuth) => {
     if (isAuth) {
       pause()
       notes.value = []
+      if (authStore.uid) {
+        _unsubscribeNotes = subscribeNotes(authStore.uid, (firestoreNotes) => {
+          notes.value = firestoreNotes
+        })
+      }
     }
     else {
+      _unsubscribeNotes?.()
+      _unsubscribeNotes = null
       resume()
       await hydrate()
     }
@@ -41,13 +55,19 @@ export const useNotesStore = defineStore('notes', () => {
       return false
     const now = Date.now()
     _lastTs = now > _lastTs ? now : _lastTs + 1
-    notes.value.push({
+    const newNote: Note = {
       id: crypto.randomUUID(),
       title: title.trim(),
       text: trimmed,
       createdAt: _lastTs,
       categoryId,
-    })
+    }
+    if (authStore.isAuthenticated && authStore.uid) {
+      saveNote(authStore.uid, newNote)
+    }
+    else {
+      notes.value.push(newNote)
+    }
     return true
   }
 
@@ -58,18 +78,34 @@ export const useNotesStore = defineStore('notes', () => {
     const note = notes.value.find(n => n.id === id)
     if (!note)
       return false
-    note.text = trimmed
-    if (categoryId !== undefined)
-      note.categoryId = categoryId
-    if (title !== undefined)
-      note.title = title.trim()
+    if (authStore.isAuthenticated && authStore.uid) {
+      const updated: Note = {
+        ...note,
+        text: trimmed,
+        categoryId: categoryId !== undefined ? categoryId : note.categoryId,
+        title: title !== undefined ? title.trim() : note.title,
+      }
+      saveNote(authStore.uid, updated)
+    }
+    else {
+      note.text = trimmed
+      if (categoryId !== undefined)
+        note.categoryId = categoryId
+      if (title !== undefined)
+        note.title = title.trim()
+    }
     return true
   }
 
   function deleteNote(id: string): void {
-    const idx = notes.value.findIndex(n => n.id === id)
-    if (idx !== -1)
-      notes.value.splice(idx, 1)
+    if (authStore.isAuthenticated && authStore.uid) {
+      firestoreDeleteNote(authStore.uid, id)
+    }
+    else {
+      const idx = notes.value.findIndex(n => n.id === id)
+      if (idx !== -1)
+        notes.value.splice(idx, 1)
+    }
   }
 
   function notesByCategory(categoryId: string | null): Note[] {

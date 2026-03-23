@@ -5,6 +5,9 @@
 - [Phase 4 — Firebase 帳號登入](./phase-4-firebase-auth.md)
 - [Phase 5 — 本地持久化與訪客模式](./phase-5-local-persistence.md)
 
+**輔助流程圖**
+- [未登入與已登入狀態切換流程圖](./auth-state-sync-notes-flow.mmd)
+
 本階段將已登入使用者的筆記串接 Cloud Firestore，實現自動雲端同步與跨裝置即時更新。訪客筆記（`browser.storage.local`）與登入筆記（Firestore）維持獨立的儲存空間，不做 merge。離線時本地變更將被佇列，待連線恢復後自動補送。
 
 > **注意**：Phase 7（端到端加密）完成後，寫入 Firestore 的資料將改為密文。本階段先以明文同步驗證流程正確性。
@@ -90,8 +93,8 @@ users/{uid}/categories/{categoryId}
 
 ### Firebase / Firestore 設定
 
-- [ ] 在 Firebase Console 啟用 Cloud Firestore（Production mode）
-- [ ] 設定 Firestore Security Rules（僅允許已認證使用者讀寫自己的資料）：
+- [x] 在 Firebase Console 啟用 Cloud Firestore（Production mode）
+- [x] 設定 Firestore Security Rules（僅允許已認證使用者讀寫自己的資料）：
   ```
   match /users/{uid}/notes/{noteId} {
     allow read, write: if request.auth != null && request.auth.uid == uid;
@@ -100,39 +103,39 @@ users/{uid}/categories/{categoryId}
     allow read, write: if request.auth != null && request.auth.uid == uid;
   }
   ```
-- [ ] 更新 `firebase.config.ts`，加入 `getFirestore()` 初始化
+- [x] 更新 `firebase.config.ts`，加入 `getFirestore()` 初始化
 
 ### Firestore Service（`services/firestore.ts`）
 
-- [ ] 建立 `services/firestore.test.ts`，撰寫失敗測試（TDD red，mock `firebase/firestore`）
-  - [ ] 測試 `saveNote` — 呼叫 `setDoc` 並帶正確路徑與資料
-  - [ ] 測試 `deleteNote` — 呼叫 `deleteDoc` 並帶正確路徑
-  - [ ] 測試 `saveCategory` / `deleteCategory` — 同上
-  - [ ] 測試 `subscribeNotes` — 呼叫 `onSnapshot`，回呼觸發時更新資料
-  - [ ] 測試 `subscribeCategories` — 同上
-- [ ] 實作 `services/firestore.ts`，使所有測試通過（TDD green）
-  - [ ] `saveNote(uid, note)` — `setDoc` with merge
-  - [ ] `deleteNote(uid, noteId)` — `deleteDoc`
-  - [ ] `saveCategory(uid, category)` — `setDoc` with merge
-  - [ ] `deleteCategory(uid, categoryId)` — `deleteDoc`
-  - [ ] `subscribeNotes(uid, callback)` — `onSnapshot`，回傳 unsubscribe fn
-  - [ ] `subscribeCategories(uid, callback)` — `onSnapshot`，回傳 unsubscribe fn
+- [x] 建立 `services/firestore.test.ts`，撰寫失敗測試（TDD red，mock `firebase/firestore`）
+  - [x] 測試 `saveNote` — 呼叫 `setDoc` 並帶正確路徑與資料
+  - [x] 測試 `deleteNote` — 呼叫 `deleteDoc` 並帶正確路徑
+  - [x] 測試 `saveCategory` / `deleteCategory` — 同上
+  - [x] 測試 `subscribeNotes` — 呼叫 `onSnapshot`，回呼觸發時更新資料
+  - [x] 測試 `subscribeCategories` — 同上
+- [x] 實作 `services/firestore.ts`，使所有測試通過（TDD green）
+  - [x] `saveNote(uid, note)` — `setDoc` with merge
+  - [x] `deleteNote(uid, noteId)` — `deleteDoc`
+  - [x] `saveCategory(uid, category)` — `setDoc` with merge
+  - [x] `deleteCategory(uid, categoryId)` — `deleteDoc`
+  - [x] `subscribeNotes(uid, callback)` — `onSnapshot`，回傳 unsubscribe fn
+  - [x] `subscribeCategories(uid, callback)` — `onSnapshot`，回傳 unsubscribe fn
 
 ### 筆記 Store 整合（`stores/notes.ts`）
 
-- [ ] 補充 `stores/notes.test.ts` 同步相關測試
-  - [ ] 測試登入後自動觸發 `subscribeNotes`，notes 由 snapshot 填入
-  - [ ] 測試登出後呼叫 unsubscribe，並從 browser.storage.local 恢復訪客筆記
-  - [ ] 測試 `addNote` / `updateNote` / `deleteNote` 呼叫對應 Firestore service（已登入時）
-- [ ] 更新 `stores/notes.ts`
-  - [ ] 登入時（`isAuthenticated` true）：啟動 `subscribeNotes`，以 snapshot 更新 `notes`
-  - [ ] 登出時（`isAuthenticated` false）：停止訂閱；`useStorageSync.resume()` + `hydrate()`（已由 Phase 5 的 watcher 處理後半段，此處補充 Firestore unsubscribe）
-  - [ ] `addNote` / `updateNote` / `deleteNote`：已登入時呼叫對應 Firestore service
+- [x] 補充 `stores/notes.test.ts` 同步相關測試
+  - [x] 測試登入後自動觸發 `subscribeNotes`，notes 由 snapshot 填入
+  - [x] 測試登出後呼叫 unsubscribe，並從 browser.storage.local 恢復訪客筆記
+  - [x] 測試 `addNote` / `updateNote` / `deleteNote` 呼叫對應 Firestore service（已登入時）
+- [x] 更新 `stores/notes.ts`
+  - [x] 登入時（`isAuthenticated` true）：啟動 `subscribeNotes`，以 snapshot 更新 `notes`
+  - [x] 登出時（`isAuthenticated` false）：停止訂閱；`useStorageSync.resume()` + `hydrate()`（已由 Phase 5 的 watcher 處理後半段，此處補充 Firestore unsubscribe）
+  - [x] `addNote` / `updateNote` / `deleteNote`：已登入時呼叫對應 Firestore service
 
 ### 分類 Store 整合（`stores/categories.ts`）
 
-- [ ] 補充 `stores/categories.test.ts` 同步相關測試（與 notes 同結構）
-- [ ] 更新 `stores/categories.ts`（與 notes 同模式）
+- [x] 補充 `stores/categories.test.ts` 同步相關測試（與 notes 同結構）
+- [x] 更新 `stores/categories.ts`（與 notes 同模式）
 
 ---
 

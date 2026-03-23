@@ -1,3 +1,4 @@
+import type { Category } from './categories'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive } from 'vue'
@@ -19,16 +20,30 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
-let mockAuthState: { isAuthenticated: boolean }
+let mockAuthState: { isAuthenticated: boolean, uid: string | null }
 
 vi.mock('./auth', () => ({
   useAuthStore: () => mockAuthState,
 }))
 
+const { mockSaveCategory, mockFirestoreDeleteCategory, mockSubscribeCategories } = vi.hoisted(() => ({
+  mockSaveCategory: vi.fn(),
+  mockFirestoreDeleteCategory: vi.fn(),
+  mockSubscribeCategories: vi.fn(),
+}))
+
+vi.mock('../services/firestore', () => ({
+  saveCategory: mockSaveCategory,
+  deleteCategory: mockFirestoreDeleteCategory,
+  subscribeCategories: mockSubscribeCategories,
+}))
+
 beforeEach(() => {
-  mockAuthState = reactive({ isAuthenticated: false })
+  mockAuthState = reactive({ isAuthenticated: false, uid: null })
   setActivePinia(createPinia())
   mockStore.clear()
+  vi.clearAllMocks()
+  mockSubscribeCategories.mockReturnValue(vi.fn())
 })
 
 describe('useCategoriesStore', () => {
@@ -154,6 +169,79 @@ describe('useCategoriesStore', () => {
       await nextTick() // wait for async hydrate()
 
       expect(store.categories).toEqual(storedCategories)
+    })
+  })
+
+  describe('firestore sync', () => {
+    it('subscribes to Firestore categories when user signs in with uid', async () => {
+      const store = useCategoriesStore()
+
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      expect(mockSubscribeCategories).toHaveBeenCalledWith('test-uid', expect.any(Function))
+      expect(store.categories).toHaveLength(0)
+    })
+
+    it('populates categories from Firestore snapshot callback', async () => {
+      const snapshotCategories: Category[] = [{ id: 'c1', name: 'Work' }]
+      mockSubscribeCategories.mockImplementation((_uid: string, cb: (cats: Category[]) => void) => {
+        cb(snapshotCategories)
+        return vi.fn()
+      })
+
+      const store = useCategoriesStore()
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      expect(store.categories).toEqual(snapshotCategories)
+    })
+
+    it('calls unsubscribe when user signs out', async () => {
+      const unsubscribeMock = vi.fn()
+      mockSubscribeCategories.mockReturnValue(unsubscribeMock)
+
+      const store = useCategoriesStore()
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      mockAuthState.isAuthenticated = false
+      mockAuthState.uid = null
+      await nextTick()
+
+      expect(unsubscribeMock).toHaveBeenCalled()
+      void store
+    })
+
+    it('calls saveCategory when addCategory is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useCategoriesStore()
+
+      store.addCategory('Cloud Work')
+
+      expect(mockSaveCategory).toHaveBeenCalledWith('test-uid', expect.objectContaining({ name: 'Cloud Work' }))
+    })
+
+    it('does not push to categories.value directly when addCategory is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useCategoriesStore()
+
+      store.addCategory('Cloud Work')
+
+      expect(store.categories).toHaveLength(0)
+    })
+
+    it('calls deleteCategory service when deleteCategory is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useCategoriesStore()
+      store.categories.push({ id: 'c1', name: 'Work' })
+
+      store.deleteCategory('c1')
+
+      expect(mockFirestoreDeleteCategory).toHaveBeenCalledWith('test-uid', 'c1')
     })
   })
 })

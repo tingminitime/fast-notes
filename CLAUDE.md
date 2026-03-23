@@ -30,25 +30,19 @@ pnpm test -- --run <pattern>  # Run a single test file/suite
 - `content.ts` — Content script injected on google.com (minimal)
 
 ### State management (`stores/`)
-Three Pinia stores, all using the Composition API style.
+Three Pinia stores, all using Composition API style.
 
-**`useNotesStore`** (`stores/notes.ts`)
-```typescript
-interface Note {
-  id: string           // crypto.randomUUID()
-  title: string        // trimmed on save
-  text: string         // trimmed on save
-  createdAt: number    // Unix timestamp, used for newest-first sort
-  categoryId: string | null
-}
-```
+**`useNotesStore`** (`stores/notes.ts`) — manages `Note[]` (id, title, text, createdAt, categoryId). Exposes `sortedNotes` (newest-first), `addNote`, `updateNote`, `deleteNote`, `notesByCategory`, `clearCategoryFromNotes`.
 
-**`useCategoriesStore`** (`stores/categories.ts`) — manages `Category[]` with duplicate-name validation. Deleting a category calls `clearCategoryFromNotes` on the notes store to null out references.
+**`useCategoriesStore`** (`stores/categories.ts`) — manages `Category[]` (id, name) with case-insensitive duplicate-name validation. `deleteCategory` calls `clearCategoryFromNotes` on the notes store to null out references.
 
-**`useAuthStore`** (`stores/auth.ts`) — Firebase Authentication via Google sign-in. Uses `browser.identity.getAuthToken` (Chrome extension API) to obtain an OAuth token, then exchanges it for a Firebase credential. Exposes `isAuthenticated`, `uid`, `signInWithGoogle()`, and `signOut()`.
+**`useAuthStore`** (`stores/auth.ts`) — Firebase Authentication via Google sign-in. Uses `browser.identity.getAuthToken` (Chrome extension API) to exchange an OAuth token for a Firebase credential. Exposes `isAuthenticated`, `uid`, `authReady` (Promise that resolves after `onAuthStateChanged` fires once), `signInWithGoogle()`, `signOut()`.
 
 ### Local persistence (`composables/`)
-**`useStorageSync`** (`composables/useStorageSync.ts`) — two-way sync between a Pinia `ref` and `browser.storage.local` via WXT's `storage.defineItem` API. Used by notes and categories stores. Exposes a `hydrate()` function that must be called at app startup (before mount in `main.ts`) to restore persisted state. Storage keys: `local:notes`, `local:categories`.
+**`useStorageSync`** (`composables/useStorageSync.ts`) — two-way sync between a Pinia `ref` and `browser.storage.local` via WXT's `storage.defineItem` API. Returns `{ hydrate, storageItem, pause, resume }`.
+
+- `hydrate()` — must be called at app startup (before mount in `main.ts`) to restore persisted state. Storage keys: `local:notes`, `local:categories`.
+- `pause()` / `resume()` — used by notes and categories stores to disable local storage writes when the user is signed in (cloud sync mode takes over). Both stores watch `authStore.isAuthenticated`: on sign-in they `pause()` and clear local state; on sign-out they `resume()` and re-hydrate.
 
 ### Routing
 Vue Router 4 with **hash history** mode (required for browser extension side panels — HTML5 history doesn't work in extension pages).

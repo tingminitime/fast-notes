@@ -18,6 +18,29 @@ vi.mock('firebase/auth/web-extension', () => {
 
 vi.mock('../firebase.config', () => ({
   auth: {},
+  db: {},
+}))
+
+vi.mock('../services/firestore', () => ({
+  saveNote: vi.fn(),
+  deleteNote: vi.fn(),
+  subscribeNotes: vi.fn(() => vi.fn()),
+  saveCategory: vi.fn(),
+  deleteCategory: vi.fn(),
+  subscribeCategories: vi.fn(() => vi.fn()),
+}))
+
+const mockStorageMap = new Map<string, any>()
+vi.mock('wxt/utils/storage', () => ({
+  storage: {
+    defineItem: (key: string, opts?: { fallback?: any }) => ({
+      key,
+      fallback: opts?.fallback,
+      getValue: vi.fn(async () => mockStorageMap.get(key) ?? opts?.fallback),
+      setValue: vi.fn(async (val: any) => { mockStorageMap.set(key, val) }),
+      watch: vi.fn(() => () => {}),
+    }),
+  },
 }))
 
 const { mockGetAuthToken } = vi.hoisted(() => ({
@@ -153,8 +176,9 @@ describe('useAuthStore', () => {
       const notesStore = useNotesStore()
       const categoriesStore = useCategoriesStore()
 
-      notesStore.addNote('keep me')
-      categoriesStore.addCategory('Work')
+      // Push directly to simulate Firestore snapshot having populated state
+      notesStore.notes.push({ id: '1', title: '', text: 'keep me', createdAt: 100, categoryId: null })
+      categoriesStore.categories.push({ id: '1', name: 'Work' })
 
       await store.signOut()
 

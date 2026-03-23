@@ -1,3 +1,4 @@
+import type { Note } from './notes'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive } from 'vue'
@@ -20,16 +21,30 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
-let mockAuthState: { isAuthenticated: boolean }
+let mockAuthState: { isAuthenticated: boolean, uid: string | null }
 
 vi.mock('./auth', () => ({
   useAuthStore: () => mockAuthState,
 }))
 
+const { mockSaveNote, mockFirestoreDeleteNote, mockSubscribeNotes } = vi.hoisted(() => ({
+  mockSaveNote: vi.fn(),
+  mockFirestoreDeleteNote: vi.fn(),
+  mockSubscribeNotes: vi.fn(),
+}))
+
+vi.mock('../services/firestore', () => ({
+  saveNote: mockSaveNote,
+  deleteNote: mockFirestoreDeleteNote,
+  subscribeNotes: mockSubscribeNotes,
+}))
+
 beforeEach(() => {
-  mockAuthState = reactive({ isAuthenticated: false })
+  mockAuthState = reactive({ isAuthenticated: false, uid: null })
   setActivePinia(createPinia())
   mockStore.clear()
+  vi.clearAllMocks()
+  mockSubscribeNotes.mockReturnValue(vi.fn())
 })
 
 describe('useNotesStore', () => {
@@ -303,6 +318,90 @@ describe('useNotesStore', () => {
       await nextTick() // wait for async hydrate()
 
       expect(store.notes).toEqual(storedNotes)
+    })
+  })
+
+  describe('firestore sync', () => {
+    it('subscribes to Firestore notes when user signs in with uid', async () => {
+      const store = useNotesStore()
+
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      expect(mockSubscribeNotes).toHaveBeenCalledWith('test-uid', expect.any(Function))
+      expect(store.notes).toHaveLength(0)
+    })
+
+    it('populates notes from Firestore snapshot callback', async () => {
+      const snapshotNotes: Note[] = [
+        { id: 'n1', title: '', text: 'Firestore note', createdAt: 100, categoryId: null },
+      ]
+      mockSubscribeNotes.mockImplementation((_uid: string, cb: (notes: Note[]) => void) => {
+        cb(snapshotNotes)
+        return vi.fn()
+      })
+
+      const store = useNotesStore()
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      expect(store.notes).toEqual(snapshotNotes)
+    })
+
+    it('calls unsubscribe when user signs out', async () => {
+      const unsubscribeMock = vi.fn()
+      mockSubscribeNotes.mockReturnValue(unsubscribeMock)
+
+      const store = useNotesStore()
+      mockAuthState.isAuthenticated = true
+      mockAuthState.uid = 'test-uid'
+      await nextTick()
+
+      mockAuthState.isAuthenticated = false
+      mockAuthState.uid = null
+      await nextTick()
+
+      expect(unsubscribeMock).toHaveBeenCalled()
+      void store
+    })
+
+    it('calls saveNote when addNote is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useNotesStore()
+
+      store.addNote('cloud note')
+
+      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ text: 'cloud note' }))
+    })
+
+    it('does not push to notes.value directly when addNote is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useNotesStore()
+
+      store.addNote('cloud note')
+
+      expect(store.notes).toHaveLength(0)
+    })
+
+    it('calls saveNote when updateNote is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useNotesStore()
+      store.notes.push({ id: 'n1', title: '', text: 'original', createdAt: 100, categoryId: null })
+
+      store.updateNote('n1', 'updated')
+
+      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ id: 'n1', text: 'updated' }))
+    })
+
+    it('calls deleteNote service when deleteNote is called while authenticated', () => {
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      const store = useNotesStore()
+
+      store.deleteNote('n1')
+
+      expect(mockFirestoreDeleteNote).toHaveBeenCalledWith('test-uid', 'n1')
     })
   })
 })

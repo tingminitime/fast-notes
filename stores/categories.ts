@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useStorageSync } from '@/composables/useStorageSync'
+import {
+  deleteCategory as firestoreDeleteCategory,
+  saveCategory,
+  subscribeCategories,
+} from '../services/firestore'
 import { useAuthStore } from './auth'
 import { useNotesStore } from './notes'
 
@@ -15,12 +20,21 @@ export const useCategoriesStore = defineStore('categories', () => {
   const error = ref('')
 
   const authStore = useAuthStore()
+  let _unsubscribeCategories: (() => void) | null = null
+
   watch(() => authStore.isAuthenticated, async (isAuth) => {
     if (isAuth) {
       pause()
       categories.value = []
+      if (authStore.uid) {
+        _unsubscribeCategories = subscribeCategories(authStore.uid, (firestoreCategories) => {
+          categories.value = firestoreCategories
+        })
+      }
     }
     else {
+      _unsubscribeCategories?.()
+      _unsubscribeCategories = null
       resume()
       await hydrate()
     }
@@ -43,18 +57,29 @@ export const useCategoriesStore = defineStore('categories', () => {
       return false
     }
     error.value = ''
-    categories.value.push({
+    const newCategory: Category = {
       id: crypto.randomUUID(),
       name: trimmed,
-    })
+    }
+    if (authStore.isAuthenticated && authStore.uid) {
+      saveCategory(authStore.uid, newCategory)
+    }
+    else {
+      categories.value.push(newCategory)
+    }
     return true
   }
 
   function deleteCategory(id: string): void {
-    const idx = categories.value.findIndex(c => c.id === id)
-    if (idx !== -1) {
-      categories.value.splice(idx, 1)
-      useNotesStore().clearCategoryFromNotes(id)
+    if (authStore.isAuthenticated && authStore.uid) {
+      firestoreDeleteCategory(authStore.uid, id)
+    }
+    else {
+      const idx = categories.value.findIndex(c => c.id === id)
+      if (idx !== -1) {
+        categories.value.splice(idx, 1)
+        useNotesStore().clearCategoryFromNotes(id)
+      }
     }
   }
 

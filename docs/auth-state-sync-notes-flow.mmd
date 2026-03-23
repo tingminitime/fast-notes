@@ -1,0 +1,19 @@
+flowchart TD
+    A([App 啟動]) --> B{auth 狀態}
+    B -->|未登入| C[hydrate from local:notes\nuseStorageSync 啟動]
+    B -->|已登入| D[useStorageSync 暫停\n啟動 Firestore onSnapshot]
+
+    C --> E([訪客模式運作中\n變更同步至 local storage])
+
+    D --> D2[Firestore 資料載入 notes.value]
+    D2 --> F([已登入模式運作中\n變更同步至 Firestore])
+
+    E -->|使用者點擊登入| G[Firebase Auth 成功]
+    G --> H[useStorageSync.pause\nnotes.value 清空]
+    H --> I[啟動 Firestore onSnapshot]
+    I --> J[Firestore 資料載入 notes.value]
+    J --> F
+
+    F -->|使用者點擊登出| K[停止 Firestore onSnapshot]
+    K --> L[useStorageSync.resume\nhydrate from local:notes]
+    L --> E

@@ -31,14 +31,32 @@ describe('sidepanel router', () => {
   })
 
   describe('route configuration', () => {
-    it('has a home route and a login route', () => {
-      expect(router.getRoutes()).toHaveLength(2)
+    it('has 5 routes', () => {
+      expect(router.getRoutes()).toHaveLength(5)
     })
 
-    it('has a home route at /', () => {
-      const home = router.getRoutes().find(r => r.path === '/')
-      expect(home).toBeDefined()
-      expect(home?.name).toBe('home')
+    it('has a notes route at /', () => {
+      const notes = router.getRoutes().find(r => r.path === '/')
+      expect(notes).toBeDefined()
+      expect(notes?.name).toBe('notes')
+    })
+
+    it('has a notes-new route at /new', () => {
+      const route = router.getRoutes().find(r => r.path === '/new')
+      expect(route).toBeDefined()
+      expect(route?.name).toBe('notes-new')
+    })
+
+    it('has a notes-edit route at /edit/:id', () => {
+      const route = router.getRoutes().find(r => r.path === '/edit/:id')
+      expect(route).toBeDefined()
+      expect(route?.name).toBe('notes-edit')
+    })
+
+    it('has a categories route at /categories', () => {
+      const route = router.getRoutes().find(r => r.path === '/categories')
+      expect(route).toBeDefined()
+      expect(route?.name).toBe('categories')
     })
   })
 
@@ -53,26 +71,26 @@ describe('sidepanel router', () => {
       await testRouter.push('/')
     })
 
-    it('starts at the home route', () => {
-      expect(testRouter.currentRoute.value.name).toBe('home')
+    it('starts at the notes route', () => {
+      expect(testRouter.currentRoute.value.name).toBe('notes')
     })
   })
 
   describe('guest mode', () => {
-    it('allows unauthenticated users to access home route', async () => {
+    it('allows unauthenticated users to access notes route', async () => {
       const auth = useAuthStore()
       expect(auth.isAuthenticated).toBe(false)
 
-      await router.push({ name: 'home' })
-      expect(router.currentRoute.value.name).toBe('home')
+      await router.push({ name: 'notes' })
+      expect(router.currentRoute.value.name).toBe('notes')
     })
 
-    it('redirects authenticated users from login to home', async () => {
+    it('redirects authenticated users from login to notes', async () => {
       const auth = useAuthStore()
       auth.user = { uid: 'uid-123' } as any
 
       await router.push({ name: 'login' })
-      expect(router.currentRoute.value.name).toBe('home')
+      expect(router.currentRoute.value.name).toBe('notes')
     })
   })
 

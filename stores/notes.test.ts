@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick, reactive } from 'vue'
 import { useCategoriesStore } from './categories'
 import { useNotesStore } from './notes'
 
@@ -19,7 +20,14 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
+let mockAuthState: { isAuthenticated: boolean }
+
+vi.mock('./auth', () => ({
+  useAuthStore: () => mockAuthState,
+}))
+
 beforeEach(() => {
+  mockAuthState = reactive({ isAuthenticated: false })
   setActivePinia(createPinia())
   mockStore.clear()
 })
@@ -263,6 +271,38 @@ describe('useNotesStore', () => {
       await store.hydrate()
       expect(() => store.sortedNotes).not.toThrow()
       expect(store.sortedNotes).toEqual([])
+    })
+  })
+
+  describe('auth state transitions', () => {
+    it('when user signs in, notes are cleared', async () => {
+      const store = useNotesStore()
+      store.addNote('guest note')
+      expect(store.notes).toHaveLength(1)
+
+      mockAuthState.isAuthenticated = true
+      await nextTick()
+
+      expect(store.notes).toHaveLength(0)
+    })
+
+    it('when user signs out, guest notes are restored from storage', async () => {
+      const storedNotes = [{ id: '1', title: '', text: 'guest', createdAt: 100, categoryId: null }]
+      mockStore.set('local:notes', storedNotes)
+
+      const store = useNotesStore()
+
+      // Sign in → notes cleared
+      mockAuthState.isAuthenticated = true
+      await nextTick()
+      expect(store.notes).toHaveLength(0)
+
+      // Sign out → guest notes restored
+      mockAuthState.isAuthenticated = false
+      await nextTick()
+      await nextTick() // wait for async hydrate()
+
+      expect(store.notes).toEqual(storedNotes)
     })
   })
 })

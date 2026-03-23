@@ -13,8 +13,12 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => user.value !== null)
   const uid = computed(() => user.value?.uid ?? null)
 
+  let _resolveAuthReady!: () => void
+  const authReady = new Promise<void>(resolve => (_resolveAuthReady = resolve))
+
   onAuthStateChanged(auth, (firebaseUser) => {
     user.value = firebaseUser
+    _resolveAuthReady()
   })
 
   async function signInWithGoogle() {
@@ -52,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     isAuthenticated,
     uid,
+    authReady,
     signInWithGoogle,
     signOut,
   }

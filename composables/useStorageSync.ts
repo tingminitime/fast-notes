@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { StorageItemKey } from 'wxt/utils/storage'
-import { watch } from 'vue'
+import { toRaw, watch } from 'vue'
 import { storage } from 'wxt/utils/storage'
 
 function normalize<T>(val: unknown, fallback: T): T {
@@ -11,10 +11,23 @@ function normalize<T>(val: unknown, fallback: T): T {
   return val as T
 }
 
-export function useStorageSync<T>(key: StorageItemKey, reactiveRef: Ref<T>, fallback: T) {
+export function useStorageSync<T>(
+  key: StorageItemKey,
+  reactiveRef: Ref<T>,
+  fallback: T,
+) {
   const storageItem = storage.defineItem<T>(key, { fallback })
 
   let _skipWatch = false
+  let _paused = false
+
+  function pause() {
+    _paused = true
+  }
+
+  function resume() {
+    _paused = false
+  }
 
   async function hydrate() {
     const stored = await storageItem.getValue()
@@ -24,11 +37,13 @@ export function useStorageSync<T>(key: StorageItemKey, reactiveRef: Ref<T>, fall
   }
 
   watch(reactiveRef, (newVal) => {
-    if (!_skipWatch)
-      storageItem.setValue(newVal)
-  }, { deep: true })
+    if (!_skipWatch && !_paused)
+      storageItem.setValue(toRaw(newVal)).catch(console.error)
+  }, { deep: true, flush: 'sync' })
 
   storageItem.watch((newVal) => {
+    if (_paused)
+      return
     const val = normalize(newVal, fallback)
     if (JSON.stringify(val) !== JSON.stringify(reactiveRef.value)) {
       _skipWatch = true
@@ -37,5 +52,5 @@ export function useStorageSync<T>(key: StorageItemKey, reactiveRef: Ref<T>, fall
     }
   })
 
-  return { hydrate, storageItem }
+  return { hydrate, storageItem, pause, resume }
 }

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useStorageSync } from '@/composables/useStorageSync'
+import { useAuthStore } from './auth'
 
 export interface Note {
   id: string
@@ -12,7 +13,19 @@ export interface Note {
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([])
-  const { hydrate } = useStorageSync('local:notes', notes, [])
+  const { hydrate, pause, resume } = useStorageSync('local:notes', notes, [])
+
+  const authStore = useAuthStore()
+  watch(() => authStore.isAuthenticated, async (isAuth) => {
+    if (isAuth) {
+      pause()
+      notes.value = []
+    }
+    else {
+      resume()
+      await hydrate()
+    }
+  })
 
   const sortedNotes = computed(() => {
     const arr = Array.isArray(notes.value) ? notes.value : []

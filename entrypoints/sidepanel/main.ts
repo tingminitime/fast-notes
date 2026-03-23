@@ -1,5 +1,6 @@
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import { useCategoriesStore } from '@/stores/categories'
 import { useNotesStore } from '@/stores/notes'
 import App from './App.vue'
@@ -13,9 +14,22 @@ async function init() {
   app.use(pinia)
   app.use(router)
 
+  // Instantiate all stores to register auth-state watchers before authReady resolves
+  const authStore = useAuthStore()
   const notesStore = useNotesStore()
   const categoriesStore = useCategoriesStore()
-  await Promise.all([notesStore.hydrate(), categoriesStore.hydrate()])
+
+  // Wait for Firebase to report initial auth state
+  await authStore.authReady
+
+  // Only hydrate from local storage when not signed in (guest mode)
+  if (!authStore.isAuthenticated) {
+    await Promise.all([
+      notesStore.hydrate(),
+      categoriesStore.hydrate(),
+    ])
+  }
+  // Authenticated: Phase 6 will load data from Firestore via onSnapshot
 
   app.mount('#app')
 }

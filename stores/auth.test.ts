@@ -1,6 +1,7 @@
 import * as firebaseAuth from 'firebase/auth/web-extension'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { useAuthStore } from './auth'
 
 vi.mock('firebase/auth/web-extension', () => {
@@ -103,6 +104,29 @@ describe('useAuthStore', () => {
       expect(store.user).toBeNull()
       expect(store.error).toBeTruthy()
       expect(store.isLoading).toBe(false)
+    })
+  })
+
+  describe('authReady', () => {
+    it('resolves when onAuthStateChanged fires for the first time', async () => {
+      let capturedCallback!: (_user: any) => void
+      vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementationOnce((_auth, cb: any) => {
+        capturedCallback = cb
+        return vi.fn()
+      })
+
+      const store = useAuthStore()
+      let resolved = false
+      const promise = store.authReady.then(() => {
+        resolved = true
+      })
+
+      expect(resolved).toBe(false)
+      capturedCallback(null)
+      await promise
+      await nextTick()
+
+      expect(resolved).toBe(true)
     })
   })
 

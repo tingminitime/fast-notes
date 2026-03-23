@@ -114,4 +114,53 @@ describe('useStorageSync', () => {
     // setValue should not be called because the value is the same
     expect(storageItem.setValue).not.toHaveBeenCalled()
   })
+
+  describe('pause / resume', () => {
+    it('pause() prevents setValue when ref mutates', () => {
+      const data = ref<string[]>([])
+      const { storageItem, pause } = useStorageSync('local:items', data, [])
+
+      pause()
+      data.value.push('new item')
+
+      expect(storageItem.setValue).not.toHaveBeenCalled()
+    })
+
+    it('pause() prevents ref from being updated on external storage change', () => {
+      const data = ref<string[]>(['old'])
+      const { pause } = useStorageSync('local:items', data, [])
+
+      pause()
+      triggerExternalChange('local:items', ['updated'])
+
+      expect(data.value).toEqual(['old'])
+    })
+
+    it('resume() re-enables setValue on ref mutation', () => {
+      const data = ref<string[]>([])
+      const { storageItem, pause, resume } = useStorageSync('local:items', data, [])
+
+      pause()
+      data.value.push('while-paused')
+      resume()
+      data.value.push('after-resume')
+
+      // Only the post-resume mutation triggers setValue (with combined array)
+      expect(storageItem.setValue).toHaveBeenCalledTimes(1)
+      expect(storageItem.setValue).toHaveBeenCalledWith(['while-paused', 'after-resume'])
+    })
+
+    it('resume() re-enables ref updates on external storage change', () => {
+      const data = ref<string[]>(['old'])
+      const { pause, resume } = useStorageSync('local:items', data, [])
+
+      pause()
+      triggerExternalChange('local:items', ['ignored'])
+      expect(data.value).toEqual(['old'])
+
+      resume()
+      triggerExternalChange('local:items', ['applied'])
+      expect(data.value).toEqual(['applied'])
+    })
+  })
 })

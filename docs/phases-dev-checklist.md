@@ -14,7 +14,7 @@ This checklist outlines the key development tasks and milestones for each phase 
 - [x] Phase 4 — Firebase 帳號登入
   - **前置功能需求**：Phase 1
   - 本階段整合 Firebase Authentication，讓使用者以 Google 帳號登入並登出。登入後的 UID 將作為 Phase 7 金鑰衍生的依據，Firestore 同步（Phase 6）也需要有效 session。
-- [ ] Phase 5 — 本地持久化與訪客模式
+- [x] Phase 5 — 本地持久化與訪客模式
   - **前置功能需求**：Phase 1、Phase 2、Phase 4
   - 本階段將筆記與分類持久化至 `browser.storage.local`，並移除強制登入限制，讓使用者不需登入即可使用筆記功能（訪客模式）。登入改為可選操作，為後續雲端同步做準備。
 - [ ] Phase 6 — 雲端同步（Firestore）

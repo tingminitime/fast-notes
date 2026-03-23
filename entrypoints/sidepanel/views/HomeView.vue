@@ -1,5 +1,12 @@
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useEventListener } from '@vueuse/core'
+import {
+  computed,
+  nextTick,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import CategoryFilter from '@/components/CategoryFilter.vue'
 import CategoryManager from '@/components/CategoryManager.vue'
 import NoteEditor from '@/components/NoteEditor.vue'
@@ -95,8 +102,7 @@ function onResize() {
     computeArrow()
 }
 
-onMounted(() => window.addEventListener('resize', onResize))
-onUnmounted(() => window.removeEventListener('resize', onResize))
+useEventListener('resize', onResize)
 </script>
 
 <template>

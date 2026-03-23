@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useStorageSync } from '@/composables/useStorageSync'
+import { useAuthStore } from './auth'
 import { useNotesStore } from './notes'
 
 export interface Category {
@@ -10,8 +11,20 @@ export interface Category {
 
 export const useCategoriesStore = defineStore('categories', () => {
   const categories = ref<Category[]>([])
-  const { hydrate } = useStorageSync('local:categories', categories, [])
+  const { hydrate, pause, resume } = useStorageSync('local:categories', categories, [])
   const error = ref('')
+
+  const authStore = useAuthStore()
+  watch(() => authStore.isAuthenticated, async (isAuth) => {
+    if (isAuth) {
+      pause()
+      categories.value = []
+    }
+    else {
+      resume()
+      await hydrate()
+    }
+  })
 
   function categoryById(id: string): Category | undefined {
     return categories.value.find(c => c.id === id)
@@ -30,7 +43,10 @@ export const useCategoriesStore = defineStore('categories', () => {
       return false
     }
     error.value = ''
-    categories.value.push({ id: crypto.randomUUID(), name: trimmed })
+    categories.value.push({
+      id: crypto.randomUUID(),
+      name: trimmed,
+    })
     return true
   }
 

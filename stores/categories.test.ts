@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick, reactive } from 'vue'
 import { useCategoriesStore } from './categories'
 
 const mockStore = new Map<string, any>()
@@ -18,7 +19,14 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
+let mockAuthState: { isAuthenticated: boolean }
+
+vi.mock('./auth', () => ({
+  useAuthStore: () => mockAuthState,
+}))
+
 beforeEach(() => {
+  mockAuthState = reactive({ isAuthenticated: false })
   setActivePinia(createPinia())
   mockStore.clear()
 })
@@ -114,6 +122,38 @@ describe('useCategoriesStore', () => {
       await store.hydrate()
 
       expect(store.categories).toEqual([])
+    })
+  })
+
+  describe('auth state transitions', () => {
+    it('when user signs in, categories are cleared', async () => {
+      const store = useCategoriesStore()
+      store.addCategory('Work')
+      expect(store.categories).toHaveLength(1)
+
+      mockAuthState.isAuthenticated = true
+      await nextTick()
+
+      expect(store.categories).toHaveLength(0)
+    })
+
+    it('when user signs out, guest categories are restored from storage', async () => {
+      const storedCategories = [{ id: '1', name: 'Work' }]
+      mockStore.set('local:categories', storedCategories)
+
+      const store = useCategoriesStore()
+
+      // Sign in → categories cleared
+      mockAuthState.isAuthenticated = true
+      await nextTick()
+      expect(store.categories).toHaveLength(0)
+
+      // Sign out → guest categories restored
+      mockAuthState.isAuthenticated = false
+      await nextTick()
+      await nextTick() // wait for async hydrate()
+
+      expect(store.categories).toEqual(storedCategories)
     })
   })
 })

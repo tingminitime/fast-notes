@@ -17,7 +17,7 @@ This checklist outlines the key development tasks and milestones for each phase 
 - [x] Phase 5 — 本地持久化與訪客模式
   - **前置功能需求**：Phase 1、Phase 2、Phase 4
   - 本階段將筆記與分類持久化至 `browser.storage.local`，並移除強制登入限制，讓使用者不需登入即可使用筆記功能（訪客模式）。登入改為可選操作，為後續雲端同步做準備。
-- [ ] Phase 6 — 雲端同步（Firestore）
+- [x] Phase 6 — 雲端同步（Firestore）
   - **前置功能需求**：Phase 1、Phase 4、Phase 5
   - 本階段將 Phase 5 的本地持久化筆記 store 串接 Cloud Firestore，實現登入使用者的筆記自動雲端同步與跨裝置即時更新。離線時本地變更將被佇列，待連線恢復後自動補送。
 - [ ] Phase 7 — 端到端加密

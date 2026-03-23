@@ -32,11 +32,16 @@ pnpm test -- --run <pattern>  # Run a single test file/suite
 ### State management (`stores/`)
 Three Pinia stores, all using Composition API style.
 
-**`useNotesStore`** (`stores/notes.ts`) — manages `Note[]` (id, title, text, createdAt, categoryId). Exposes `sortedNotes` (newest-first), `addNote`, `updateNote`, `deleteNote`, `notesByCategory`, `clearCategoryFromNotes`.
+- **`useNotesStore`** — CRUD for `Note[]` (id, title, text, createdAt, categoryId); `text` stores Tiptap HTML or legacy plain text.
+- **`useCategoriesStore`** — CRUD for `Category[]`; case-insensitive duplicate-name guard; `deleteCategory` nulls out `categoryId` references in notes.
+- **`useAuthStore`** — Firebase Auth via Google sign-in; uses `browser.identity.getAuthToken` (Chrome extension OAuth flow); exposes `isAuthenticated`, `uid`, `authReady`.
 
-**`useCategoriesStore`** (`stores/categories.ts`) — manages `Category[]` (id, name) with case-insensitive duplicate-name validation. `deleteCategory` calls `clearCategoryFromNotes` on the notes store to null out references.
+### Note content (`utils/noteContent.ts`)
+Handles backward compatibility between legacy plain-text notes and Tiptap HTML notes stored in the same `text: string` field.
 
-**`useAuthStore`** (`stores/auth.ts`) — Firebase Authentication via Google sign-in. Uses `browser.identity.getAuthToken` (Chrome extension API) to exchange an OAuth token for a Firebase credential. Exposes `isAuthenticated`, `uid`, `authReady` (Promise that resolves after `onAuthStateChanged` fires once), `signInWithGoogle()`, `signOut()`.
+- **`isHtml`** — returns `true` only if the string starts with a Tiptap StarterKit block tag (`p`, `ul`, `ol`, `li`, `h1–h6`, `blockquote`, `pre`, `hr`, `br`).
+- **`toDisplayHtml`** — if already HTML, pass through; otherwise splits on `\n`, escapes each line (`&`, `<`, `>`, `"`), and wraps in `<p>` tags. Safe to use with `v-html`.
+- **`toPlainText`** — strips tags via a temp `div.innerHTML`; used for clipboard copy.
 
 ### Local persistence (`composables/`)
 **`useStorageSync`** (`composables/useStorageSync.ts`) — two-way sync between a Pinia `ref` and `browser.storage.local` via WXT's `storage.defineItem` API. Returns `{ hydrate, storageItem, pause, resume }`.

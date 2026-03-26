@@ -29,8 +29,8 @@
 3. THE EXTENSION SHALL perform encryption and decryption operations exclusively on the client side.
 
 4. WHILE storing notes,
-   THE EXTENSION SHALL ensure that Cloud Firestore receives and stores only ciphertext,
-   never plaintext note content.
+   THE EXTENSION SHALL ensure that Cloud Firestore receives and stores only ciphertext
+   for all user-authored fields (title, text, categoryId), never plaintext.
 ```
 
 ### US-14 本地解密筆記瀏覽
@@ -55,6 +55,7 @@
 |------|------|
 | 加密演算法 | AES-GCM，256-bit key |
 | 金鑰衍生 | PBKDF2，`password = Firebase UID`，`salt = uid (UTF-8 bytes)`，100,000 iterations，SHA-256 |
+| 加密輸入 | `JSON.stringify({ title, text, categoryId })`，即所有使用者撰寫欄位 |
 | IV | 每次加密產生隨機 12-byte IV，與密文一起儲存 |
 | 儲存格式 | `iv` (base64) + `ciphertext` (base64) |
 
@@ -62,12 +63,21 @@
 
 ```
 users/{uid}/notes/{noteId}
-  - id: string
-  - text: string  →  改為  ciphertext: string  (base64 encoded AES-GCM output)
-  - iv: string              (base64 encoded 12-byte random IV)
-  - createdAt: number
-  - categoryId: string | null
-  - updatedAt: number
+  - id: string          ← 明文（Firestore 查找用）
+  - createdAt: number   ← 明文（排序用）
+  - iv: string          ← base64 encoded 12-byte random IV
+  - ciphertext: string  ← base64 encoded AES-GCM output of
+                           JSON.stringify({ title, text, categoryId })
+
+  移除欄位：title, text, categoryId（全部移入加密 payload）
+
+users/{uid}/categories/{categoryId}
+  - id: string          ← 明文（Firestore 查找用）
+  - iv: string          ← base64 encoded 12-byte random IV
+  - ciphertext: string  ← base64 encoded AES-GCM output of
+                           JSON.stringify({ name })
+
+  移除欄位：name（移入加密 payload）
 ```
 
 ### 新增 / 修改檔案
@@ -77,7 +87,7 @@ users/{uid}/notes/{noteId}
 | `utils/crypto.ts` | Web Crypto API 工具函式（deriveKey, encrypt, decrypt） |
 | `utils/crypto.test.ts` | 加密 / 解密單元測試 (TDD) |
 | `stores/auth.ts` | 登入後衍生並快取 CryptoKey |
-| `services/firestore.ts` | 寫入前加密、讀取後解密 |
+| `services/firestore.ts` | 寫入前加密、讀取後解密（筆記與分類） |
 | `services/firestore.test.ts` | 補充加密相關測試案例 |
 
 ---
@@ -107,11 +117,14 @@ users/{uid}/notes/{noteId}
 
 ### Firestore Service 整合（`services/firestore.ts`）
 
-- [ ] 補充 `services/firestore.test.ts` — 驗證寫入 Firestore 的 payload 不含明文 `text`
+- [ ] 補充 `services/firestore.test.ts` — 驗證寫入 Firestore 的 payload 不含明文 `title`、`text`、`categoryId`、`name`
 - [ ] 更新 `services/firestore.ts`
-  - [ ] `saveNote(uid, note, cryptoKey)` — 加密 `note.text`，以 `{ ciphertext, iv }` 取代 `text` 寫入
-  - [ ] `subscribeNotes` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt`，失敗時替換為錯誤 placeholder
+  - [ ] `saveNote(uid, note, cryptoKey)` — 加密 `JSON.stringify({ title, text, categoryId })`，以 `{ id, createdAt, iv, ciphertext }` 寫入 Firestore
+  - [ ] `saveCategory(uid, category, cryptoKey)` — 加密 `JSON.stringify({ name })`，以 `{ id, iv, ciphertext }` 寫入 Firestore
+  - [ ] `subscribeNotes` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時替換為錯誤 placeholder
+  - [ ] `subscribeCategories` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時略過或替換為錯誤 placeholder
 - [ ] 確認 Note store 呼叫 `saveNote` 時傳入 `authStore.cryptoKey`
+- [ ] 確認 Categories store 呼叫 `saveCategory` 時傳入 `authStore.cryptoKey`
 
 ---
 
@@ -119,7 +132,8 @@ users/{uid}/notes/{noteId}
 
 > 以下項目需要手動在瀏覽器與 Firebase Console 中驗證。
 
-- [ ] **密文驗證**：新增一條筆記後，至 Firebase Console → Firestore，確認文件中只有 `ciphertext` 與 `iv` 欄位，**不存在** `text` 明文欄位
-- [ ] **自動解密**：確認側邊欄中顯示的筆記內容為可讀的明文，使用者無需任何額外操作
-- [ ] **跨裝置解密**：在兩台裝置以相同 Google 帳號登入，確認兩端均能正確顯示筆記（PBKDF2 衍生的金鑰一致）
+- [ ] **筆記密文驗證**：新增一條筆記後，至 Firebase Console → Firestore，確認文件中只有 `id`、`createdAt`、`ciphertext`、`iv` 欄位，**不存在** `title`、`text`、`categoryId` 明文欄位
+- [ ] **分類密文驗證**：新增一個分類後，確認文件中只有 `id`、`ciphertext`、`iv` 欄位，**不存在** `name` 明文欄位
+- [ ] **自動解密**：確認側邊欄中顯示的筆記標題、內容與分類均為可讀的明文，使用者無需任何額外操作
+- [ ] **跨裝置解密**：在兩台裝置以相同 Google 帳號登入，確認兩端均能正確顯示筆記與分類（PBKDF2 衍生的金鑰一致）
 - [ ] **解密失敗處理**：在 Firestore Console 手動修改某筆記的 `ciphertext` 為損壞資料，確認該筆記在側邊欄顯示錯誤 placeholder 而非崩潰或顯示亂碼

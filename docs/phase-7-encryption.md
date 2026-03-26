@@ -96,35 +96,35 @@ users/{uid}/categories/{categoryId}
 
 ### 加密工具（`utils/crypto.ts`）
 
-- [ ] 建立 `utils/crypto.test.ts`，撰寫失敗測試（TDD red）
-  - [ ] 測試 `deriveKey(uid)` — 回傳 CryptoKey 物件，且相同 uid 每次產生相同金鑰
-  - [ ] 測試 `encrypt(key, plaintext)` — 回傳含 `iv` 與 `ciphertext` 的物件
-  - [ ] 測試 `decrypt(key, iv, ciphertext)` — 正確還原 plaintext
-  - [ ] 測試 `decrypt` 使用錯誤金鑰時拋出錯誤（DOMException）
-  - [ ] 測試加密輸出為 base64 字串，且不含原始明文
-- [ ] 實作 `utils/crypto.ts`，使所有測試通過（TDD green）
-  - [ ] `deriveKey(uid: string): Promise<CryptoKey>` — PBKDF2 → AES-GCM 256
-  - [ ] `encrypt(key: CryptoKey, plaintext: string): Promise<{ iv: string; ciphertext: string }>`
-  - [ ] `decrypt(key: CryptoKey, iv: string, ciphertext: string): Promise<string>`
+- [x] 建立 `utils/crypto.test.ts`，撰寫失敗測試（TDD red）
+  - [x] 測試 `deriveKey(uid)` — 回傳 CryptoKey 物件，且相同 uid 每次產生相同金鑰
+  - [x] 測試 `encrypt(key, plaintext)` — 回傳含 `iv` 與 `ciphertext` 的物件
+  - [x] 測試 `decrypt(key, iv, ciphertext)` — 正確還原 plaintext
+  - [x] 測試 `decrypt` 使用錯誤金鑰時拋出錯誤（DOMException）
+  - [x] 測試加密輸出為 base64 字串，且不含原始明文
+- [x] 實作 `utils/crypto.ts`，使所有測試通過（TDD green）
+  - [x] `deriveKey(uid: string): Promise<CryptoKey>` — PBKDF2 → AES-GCM 256
+  - [x] `encrypt(key: CryptoKey, plaintext: string): Promise<{ iv: string; ciphertext: string }>`
+  - [x] `decrypt(key: CryptoKey, iv: string, ciphertext: string): Promise<string>`
 
 ### Auth Store 整合（`stores/auth.ts`）
 
-- [ ] 補充測試：登入後 `cryptoKey` 不為 null
-- [ ] 更新 `stores/auth.ts`
-  - [ ] 新增 `state`: `cryptoKey: CryptoKey | null`
-  - [ ] 登入成功（`onAuthStateChanged` 取得 user）後，呼叫 `deriveKey(uid)` 並存入 `cryptoKey`
-  - [ ] 登出時清空 `cryptoKey`
+- [x] 補充測試：登入後 `cryptoKey` 不為 null
+- [x] 更新 `stores/auth.ts`
+  - [x] 新增 `state`: `cryptoKey: CryptoKey | null`
+  - [x] 登入成功（`onAuthStateChanged` 取得 user）後，呼叫 `deriveKey(uid)` 並存入 `cryptoKey`
+  - [x] 登出時清空 `cryptoKey`
 
 ### Firestore Service 整合（`services/firestore.ts`）
 
-- [ ] 補充 `services/firestore.test.ts` — 驗證寫入 Firestore 的 payload 不含明文 `title`、`text`、`categoryId`、`name`
-- [ ] 更新 `services/firestore.ts`
-  - [ ] `saveNote(uid, note, cryptoKey)` — 加密 `JSON.stringify({ title, text, categoryId })`，以 `{ id, createdAt, iv, ciphertext }` 寫入 Firestore
-  - [ ] `saveCategory(uid, category, cryptoKey)` — 加密 `JSON.stringify({ name })`，以 `{ id, iv, ciphertext }` 寫入 Firestore
-  - [ ] `subscribeNotes` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時替換為錯誤 placeholder
-  - [ ] `subscribeCategories` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時略過或替換為錯誤 placeholder
-- [ ] 確認 Note store 呼叫 `saveNote` 時傳入 `authStore.cryptoKey`
-- [ ] 確認 Categories store 呼叫 `saveCategory` 時傳入 `authStore.cryptoKey`
+- [x] 補充 `services/firestore.test.ts` — 驗證寫入 Firestore 的 payload 不含明文 `title`、`text`、`categoryId`、`name`
+- [x] 更新 `services/firestore.ts`
+  - [x] `saveNote(uid, note, cryptoKey)` — 加密 `JSON.stringify({ title, text, categoryId })`，以 `{ id, createdAt, iv, ciphertext }` 寫入 Firestore
+  - [x] `saveCategory(uid, category, cryptoKey)` — 加密 `JSON.stringify({ name })`，以 `{ id, iv, ciphertext }` 寫入 Firestore
+  - [x] `subscribeNotes` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時替換為錯誤 placeholder
+  - [x] `subscribeCategories` 的 snapshot 回呼中，對每筆資料呼叫 `decrypt` → parse JSON，失敗時略過或替換為錯誤 placeholder
+- [x] 確認 Note store 呼叫 `saveNote` 時傳入 `authStore.cryptoKey`
+- [x] 確認 Categories store 呼叫 `saveCategory` 時傳入 `authStore.cryptoKey`
 
 ---
 
@@ -132,8 +132,8 @@ users/{uid}/categories/{categoryId}
 
 > 以下項目需要手動在瀏覽器與 Firebase Console 中驗證。
 
-- [ ] **筆記密文驗證**：新增一條筆記後，至 Firebase Console → Firestore，確認文件中只有 `id`、`createdAt`、`ciphertext`、`iv` 欄位，**不存在** `title`、`text`、`categoryId` 明文欄位
-- [ ] **分類密文驗證**：新增一個分類後，確認文件中只有 `id`、`ciphertext`、`iv` 欄位，**不存在** `name` 明文欄位
-- [ ] **自動解密**：確認側邊欄中顯示的筆記標題、內容與分類均為可讀的明文，使用者無需任何額外操作
-- [ ] **跨裝置解密**：在兩台裝置以相同 Google 帳號登入，確認兩端均能正確顯示筆記與分類（PBKDF2 衍生的金鑰一致）
-- [ ] **解密失敗處理**：在 Firestore Console 手動修改某筆記的 `ciphertext` 為損壞資料，確認該筆記在側邊欄顯示錯誤 placeholder 而非崩潰或顯示亂碼
+- [x] **筆記密文驗證**：新增一條筆記後，至 Firebase Console → Firestore，確認文件中只有 `id`、`createdAt`、`ciphertext`、`iv` 欄位，**不存在** `title`、`text`、`categoryId` 明文欄位
+- [x] **分類密文驗證**：新增一個分類後，確認文件中只有 `id`、`ciphertext`、`iv` 欄位，**不存在** `name` 明文欄位
+- [x] **自動解密**：確認側邊欄中顯示的筆記標題、內容與分類均為可讀的明文，使用者無需任何額外操作
+- [x] **跨裝置解密**：在兩台裝置以相同 Google 帳號登入，確認兩端均能正確顯示筆記與分類（PBKDF2 衍生的金鑰一致）
+- [x] **解密失敗處理**：在 Firestore Console 手動修改某筆記的 `ciphertext` 為損壞資料，確認該筆記在側邊欄顯示錯誤 placeholder 而非崩潰或顯示亂碼

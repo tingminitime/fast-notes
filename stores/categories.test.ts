@@ -20,7 +20,8 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
-let mockAuthState: { isAuthenticated: boolean, uid: string | null }
+const mockCryptoKey = {} as CryptoKey
+let mockAuthState: { isAuthenticated: boolean, uid: string | null, cryptoKey: CryptoKey | null }
 
 vi.mock('./auth', () => ({
   useAuthStore: () => mockAuthState,
@@ -39,7 +40,7 @@ vi.mock('../services/firestore', () => ({
 }))
 
 beforeEach(() => {
-  mockAuthState = reactive({ isAuthenticated: false, uid: null })
+  mockAuthState = reactive({ isAuthenticated: false, uid: null, cryptoKey: null })
   setActivePinia(createPinia())
   mockStore.clear()
   vi.clearAllMocks()
@@ -178,15 +179,16 @@ describe('useCategoriesStore', () => {
 
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
-      expect(mockSubscribeCategories).toHaveBeenCalledWith('test-uid', expect.any(Function))
+      expect(mockSubscribeCategories).toHaveBeenCalledWith('test-uid', mockCryptoKey, expect.any(Function))
       expect(store.categories).toHaveLength(0)
     })
 
     it('populates categories from Firestore snapshot callback', async () => {
       const snapshotCategories: Category[] = [{ id: 'c1', name: 'Work' }]
-      mockSubscribeCategories.mockImplementation((_uid: string, cb: (cats: Category[]) => void) => {
+      mockSubscribeCategories.mockImplementation((_uid: string, _key: CryptoKey, cb: (cats: Category[]) => void) => {
         cb(snapshotCategories)
         return vi.fn()
       })
@@ -194,6 +196,7 @@ describe('useCategoriesStore', () => {
       const store = useCategoriesStore()
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
       expect(store.categories).toEqual(snapshotCategories)
@@ -206,6 +209,7 @@ describe('useCategoriesStore', () => {
       const store = useCategoriesStore()
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
       mockAuthState.isAuthenticated = false
@@ -217,16 +221,16 @@ describe('useCategoriesStore', () => {
     })
 
     it('calls saveCategory when addCategory is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useCategoriesStore()
 
       store.addCategory('Cloud Work')
 
-      expect(mockSaveCategory).toHaveBeenCalledWith('test-uid', expect.objectContaining({ name: 'Cloud Work' }))
+      expect(mockSaveCategory).toHaveBeenCalledWith('test-uid', expect.objectContaining({ name: 'Cloud Work' }), mockCryptoKey)
     })
 
     it('does not push to categories.value directly when addCategory is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useCategoriesStore()
 
       store.addCategory('Cloud Work')
@@ -235,7 +239,7 @@ describe('useCategoriesStore', () => {
     })
 
     it('calls deleteCategory service when deleteCategory is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useCategoriesStore()
       store.categories.push({ id: 'c1', name: 'Work' })
 

@@ -26,8 +26,8 @@ export const useCategoriesStore = defineStore('categories', () => {
     if (isAuth) {
       pause()
       categories.value = []
-      if (authStore.uid) {
-        _unsubscribeCategories = subscribeCategories(authStore.uid, (firestoreCategories) => {
+      if (authStore.uid && authStore.cryptoKey) {
+        _unsubscribeCategories = subscribeCategories(authStore.uid, authStore.cryptoKey, (firestoreCategories) => {
           categories.value = firestoreCategories
         })
       }
@@ -61,8 +61,8 @@ export const useCategoriesStore = defineStore('categories', () => {
       id: crypto.randomUUID(),
       name: trimmed,
     }
-    if (authStore.isAuthenticated && authStore.uid) {
-      saveCategory(authStore.uid, newCategory)
+    if (authStore.isAuthenticated && authStore.uid && authStore.cryptoKey) {
+      saveCategory(authStore.uid, newCategory, authStore.cryptoKey)
     }
     else {
       categories.value.push(newCategory)

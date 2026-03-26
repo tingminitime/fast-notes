@@ -52,6 +52,6 @@ describe('loginView', () => {
 
     await flushPromises()
 
-    expect(router.currentRoute.value.name).toBe('home')
+    expect(router.currentRoute.value.name).toBe('notes')
   })
 })

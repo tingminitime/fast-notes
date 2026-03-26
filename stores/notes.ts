@@ -29,8 +29,8 @@ export const useNotesStore = defineStore('notes', () => {
     if (isAuth) {
       pause()
       notes.value = []
-      if (authStore.uid) {
-        _unsubscribeNotes = subscribeNotes(authStore.uid, (firestoreNotes) => {
+      if (authStore.uid && authStore.cryptoKey) {
+        _unsubscribeNotes = subscribeNotes(authStore.uid, authStore.cryptoKey, (firestoreNotes) => {
           notes.value = firestoreNotes
         })
       }
@@ -70,8 +70,8 @@ export const useNotesStore = defineStore('notes', () => {
       createdAt: _lastTs,
       categoryId,
     }
-    if (authStore.isAuthenticated && authStore.uid) {
-      saveNote(authStore.uid, newNote)
+    if (authStore.isAuthenticated && authStore.uid && authStore.cryptoKey) {
+      saveNote(authStore.uid, newNote, authStore.cryptoKey)
     }
     else {
       notes.value.push(newNote)
@@ -86,14 +86,14 @@ export const useNotesStore = defineStore('notes', () => {
     const note = notes.value.find(n => n.id === id)
     if (!note)
       return false
-    if (authStore.isAuthenticated && authStore.uid) {
+    if (authStore.isAuthenticated && authStore.uid && authStore.cryptoKey) {
       const updated: Note = {
         ...note,
         text: trimmed,
         categoryId: categoryId !== undefined ? categoryId : note.categoryId,
         title: title !== undefined ? title.trim() : note.title,
       }
-      saveNote(authStore.uid, updated)
+      saveNote(authStore.uid, updated, authStore.cryptoKey)
     }
     else {
       note.text = trimmed

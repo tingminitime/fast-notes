@@ -21,7 +21,8 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
-let mockAuthState: { isAuthenticated: boolean, uid: string | null }
+const mockCryptoKey = {} as CryptoKey
+let mockAuthState: { isAuthenticated: boolean, uid: string | null, cryptoKey: CryptoKey | null }
 
 vi.mock('./auth', () => ({
   useAuthStore: () => mockAuthState,
@@ -40,7 +41,7 @@ vi.mock('../services/firestore', () => ({
 }))
 
 beforeEach(() => {
-  mockAuthState = reactive({ isAuthenticated: false, uid: null })
+  mockAuthState = reactive({ isAuthenticated: false, uid: null, cryptoKey: null })
   setActivePinia(createPinia())
   mockStore.clear()
   vi.clearAllMocks()
@@ -350,9 +351,10 @@ describe('useNotesStore', () => {
 
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
-      expect(mockSubscribeNotes).toHaveBeenCalledWith('test-uid', expect.any(Function))
+      expect(mockSubscribeNotes).toHaveBeenCalledWith('test-uid', mockCryptoKey, expect.any(Function))
       expect(store.notes).toHaveLength(0)
     })
 
@@ -360,7 +362,7 @@ describe('useNotesStore', () => {
       const snapshotNotes: Note[] = [
         { id: 'n1', title: '', text: 'Firestore note', createdAt: 100, categoryId: null },
       ]
-      mockSubscribeNotes.mockImplementation((_uid: string, cb: (notes: Note[]) => void) => {
+      mockSubscribeNotes.mockImplementation((_uid: string, _key: CryptoKey, cb: (notes: Note[]) => void) => {
         cb(snapshotNotes)
         return vi.fn()
       })
@@ -368,6 +370,7 @@ describe('useNotesStore', () => {
       const store = useNotesStore()
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
       expect(store.notes).toEqual(snapshotNotes)
@@ -380,6 +383,7 @@ describe('useNotesStore', () => {
       const store = useNotesStore()
       mockAuthState.isAuthenticated = true
       mockAuthState.uid = 'test-uid'
+      mockAuthState.cryptoKey = mockCryptoKey
       await nextTick()
 
       mockAuthState.isAuthenticated = false
@@ -391,16 +395,16 @@ describe('useNotesStore', () => {
     })
 
     it('calls saveNote when addNote is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useNotesStore()
 
       store.addNote('cloud note')
 
-      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ text: 'cloud note' }))
+      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ text: 'cloud note' }), mockCryptoKey)
     })
 
     it('does not push to notes.value directly when addNote is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useNotesStore()
 
       store.addNote('cloud note')
@@ -409,17 +413,17 @@ describe('useNotesStore', () => {
     })
 
     it('calls saveNote when updateNote is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useNotesStore()
       store.notes.push({ id: 'n1', title: '', text: 'original', createdAt: 100, categoryId: null })
 
       store.updateNote('n1', 'updated')
 
-      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ id: 'n1', text: 'updated' }))
+      expect(mockSaveNote).toHaveBeenCalledWith('test-uid', expect.objectContaining({ id: 'n1', text: 'updated' }), mockCryptoKey)
     })
 
     it('calls deleteNote service when deleteNote is called while authenticated', () => {
-      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid' })
+      mockAuthState = reactive({ isAuthenticated: true, uid: 'test-uid', cryptoKey: mockCryptoKey })
       const store = useNotesStore()
 
       store.deleteNote('n1')

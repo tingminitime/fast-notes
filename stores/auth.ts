@@ -1,12 +1,14 @@
 import type { User } from 'firebase/auth/web-extension'
 import { signOut as firebaseSignOut, GoogleAuthProvider, onAuthStateChanged, signInWithCredential } from 'firebase/auth/web-extension'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { browser } from 'wxt/browser'
 import { auth } from '../firebase.config'
+import { deriveKey } from '../utils/crypto'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
+  const cryptoKey = shallowRef<CryptoKey | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -16,8 +18,15 @@ export const useAuthStore = defineStore('auth', () => {
   let _resolveAuthReady!: () => void
   const authReady = new Promise<void>(resolve => (_resolveAuthReady = resolve))
 
-  onAuthStateChanged(auth, (firebaseUser) => {
-    user.value = firebaseUser
+  onAuthStateChanged(auth, async (firebaseUser) => {
+    if (firebaseUser) {
+      cryptoKey.value = await deriveKey(firebaseUser.uid)
+      user.value = firebaseUser
+    }
+    else {
+      cryptoKey.value = null
+      user.value = null
+    }
     _resolveAuthReady()
   })
 
@@ -29,8 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (!token)
         throw new Error('Failed to get auth token')
       const credential = GoogleAuthProvider.credential(null, token)
-      const result = await signInWithCredential(auth, credential)
-      user.value = result.user
+      await signInWithCredential(auth, credential)
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Sign in failed'
@@ -43,6 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function signOut() {
     try {
       await firebaseSignOut(auth)
+      cryptoKey.value = null
       user.value = null
     }
     catch (err) {
@@ -52,6 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    cryptoKey,
     isLoading,
     error,
     isAuthenticated,

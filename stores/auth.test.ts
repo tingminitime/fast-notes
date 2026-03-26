@@ -2,7 +2,12 @@ import * as firebaseAuth from 'firebase/auth/web-extension'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick } from 'vue'
+import { deriveKey } from '../utils/crypto'
 import { useAuthStore } from './auth'
+
+vi.mock('../utils/crypto', () => ({
+  deriveKey: vi.fn(),
+}))
 
 vi.mock('firebase/auth/web-extension', () => {
   // eslint-disable-next-line prefer-arrow-callback
@@ -60,6 +65,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(firebaseAuth.onAuthStateChanged).mockReturnValue(vi.fn())
   ;(firebaseAuth.GoogleAuthProvider as any).credential = vi.fn().mockReturnValue({ providerId: 'google.com' })
+  vi.mocked(deriveKey).mockResolvedValue({ type: 'secret' } as unknown as CryptoKey)
 })
 
 describe('useAuthStore', () => {
@@ -105,7 +111,7 @@ describe('useAuthStore', () => {
   })
 
   describe('signInWithGoogle', () => {
-    it('sets user on success', async () => {
+    it('clears loading and error state on success, leaving user to be set by onAuthStateChanged', async () => {
       const mockUser = { uid: 'uid-123', displayName: 'Test User', email: 'test@example.com' }
       mockGetAuthToken.mockResolvedValueOnce({ token: 'mock-access-token' })
       vi.mocked(firebaseAuth.signInWithCredential).mockResolvedValueOnce({ user: mockUser } as any)
@@ -113,9 +119,11 @@ describe('useAuthStore', () => {
       const store = useAuthStore()
       await store.signInWithGoogle()
 
-      expect(store.user).toEqual(mockUser)
       expect(store.isLoading).toBe(false)
       expect(store.error).toBeNull()
+      // user is set by onAuthStateChanged (not by signInWithGoogle directly),
+      // ensuring cryptoKey is derived before isAuthenticated becomes true
+      expect(store.user).toBeNull()
     })
 
     it('sets error on failure and keeps user null', async () => {
@@ -150,6 +158,42 @@ describe('useAuthStore', () => {
       await nextTick()
 
       expect(resolved).toBe(true)
+    })
+  })
+
+  describe('cryptoKey', () => {
+    it('is null initially', () => {
+      const store = useAuthStore()
+      expect(store.cryptoKey).toBeNull()
+    })
+
+    it('is derived and stored after onAuthStateChanged fires with a user', async () => {
+      const mockKey = { type: 'secret' } as unknown as CryptoKey
+      vi.mocked(deriveKey).mockResolvedValueOnce(mockKey)
+
+      let capturedCallback!: (user: any) => void
+      vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementationOnce((_auth, cb: any) => {
+        capturedCallback = cb
+        return vi.fn()
+      })
+
+      const store = useAuthStore()
+      capturedCallback({ uid: 'uid-123' })
+
+      await vi.waitFor(() => expect(store.cryptoKey).toBe(mockKey))
+      expect(deriveKey).toHaveBeenCalledWith('uid-123')
+    })
+
+    it('is cleared on sign out', async () => {
+      vi.mocked(firebaseAuth.signOut).mockResolvedValueOnce(undefined)
+
+      const store = useAuthStore()
+      store.cryptoKey = { type: 'secret' } as unknown as CryptoKey
+      store.user = { uid: 'uid-123' } as any
+
+      await store.signOut()
+
+      expect(store.cryptoKey).toBeNull()
     })
   })
 

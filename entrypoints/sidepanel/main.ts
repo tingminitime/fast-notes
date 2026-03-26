@@ -29,7 +29,6 @@ async function init() {
       categoriesStore.hydrate(),
     ])
   }
-  // Authenticated: Phase 6 will load data from Firestore via onSnapshot
 
   app.mount('#app')
 }

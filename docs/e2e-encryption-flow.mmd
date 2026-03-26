@@ -1,0 +1,95 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px"}}}%%
+flowchart TD
+    User(["👤 使用者"])
+
+    subgraph LOGIN["🔐 登入與金鑰衍生　stores/auth.ts"]
+        direction TB
+        L1["① 點擊 Sign in with Google\nsignInWithGoogle()"]
+        L2["② browser.identity.getAuthToken()\n取得 OAuth Access Token"]
+        L3["③ signInWithCredential()\nFirebase Auth 完成登入"]
+        L4["④ onAuthStateChanged 觸發\n（Firebase 非同步回呼）"]
+        L5["⑤ deriveKey(uid)\nPBKDF2 × 100,000 次　SHA-256\n→ AES-GCM 256-bit CryptoKey"]
+        L6["⑥ cryptoKey.value = 衍生金鑰\nuser.value = firebaseUser\nisAuthenticated = true"]
+        L1 --> L2 --> L3 --> L4 --> L5 --> L6
+    end
+
+    subgraph ACTIVATE["📡 Store 訂閱啟動　stores/notes.ts　stores/categories.ts"]
+        direction TB
+        AC1["⑦ isAuthenticated watcher 觸發\npause() 停止本地儲存同步\n清空本地 notes / categories"]
+        AC2["⑧ subscribeNotes(uid, cryptoKey, cb)\nsubscribeCategories(uid, cryptoKey, cb)\n建立 Firestore 即時監聽"]
+        AC1 --> AC2
+    end
+
+    subgraph FIRESTORE["☁️ Firestore（僅儲存密文）"]
+        direction LR
+        FS_NOTES[("users/{uid}/notes\n─────────────────\nid　createdAt\niv　ciphertext")]
+        FS_CATS[("users/{uid}/categories\n─────────────────\nid\niv　ciphertext")]
+    end
+
+    subgraph READ["🔓 讀取 ／ 同步（解密）　services/firestore.ts"]
+        direction TB
+        R1["⑨ onSnapshot 收到加密文件"]
+        R2["⑩ decrypt(cryptoKey, iv, ciphertext)\nAES-GCM 解密"]
+        R3{"解密成功？"}
+        R4["⑪ JSON.parse 還原原始欄位\nnotes.value ／ categories.value 更新"]
+        R5["佔位符：title = '[Decryption failed]'\ntext = ''　（其餘 meta 保留）"]
+        R1 --> R2 --> R3
+        R3 -- 成功 --> R4
+        R3 -- 失敗 --> R5
+    end
+
+    subgraph WRITE["🔒 新增 ／ 編輯（加密）　services/firestore.ts"]
+        direction TB
+        W1["使用者新增或編輯筆記 ／ 分類"]
+        W2["encrypt(cryptoKey, JSON.stringify(payload))\n產生隨機 12-byte IV\nAES-GCM 加密"]
+        W3["回傳 { iv: base64, ciphertext: base64 }"]
+        W4["setDoc 寫入 Firestore\n筆記：{ id, createdAt, iv, ciphertext }\n分類：{ id, iv, ciphertext }\n（不含任何明文欄位）"]
+        W1 --> W2 --> W3 --> W4
+    end
+
+    subgraph DELETE["🗑️ 刪除　services/firestore.ts"]
+        direction TB
+        D1["使用者刪除筆記 ／ 分類"]
+        D2["deleteDoc()\n直接刪除 Firestore 文件"]
+        D1 --> D2
+    end
+
+    subgraph SIGNOUT["🚪 登出　stores/auth.ts"]
+        direction TB
+        SO1["使用者登出　signOut()"]
+        SO2["firebaseSignOut()\ncryptoKey.value = null\nuser.value = null\nisAuthenticated = false"]
+        SO3["isAuthenticated watcher 觸發\nunsubscribe() 取消 Firestore 監聽\nresume() 恢復本地儲存同步\nhydrate() 還原本地（未登入）資料"]
+        SO1 --> SO2 --> SO3
+    end
+
+    UI(["💻 UI 自動更新\nVue 響應式"])
+
+    %% Login → Activate
+    User --> L1
+    L6 --> AC1
+
+    %% Activate → Firestore subscribe
+    AC2 -->|"onSnapshot 監聽"| FS_NOTES
+    AC2 -->|"onSnapshot 監聽"| FS_CATS
+
+    %% Firestore → Read (decrypt)
+    FS_NOTES --> R1
+    FS_CATS --> R1
+
+    %% Read → UI
+    R4 --> UI
+    R5 --> UI
+
+    %% UI → Write (encrypt)
+    UI -->|"addNote / updateNote\naddCategory"| W1
+    W4 -->|"觸發 onSnapshot"| FS_NOTES
+    W4 -->|"觸發 onSnapshot"| FS_CATS
+
+    %% UI → Delete
+    UI -->|"deleteNote / deleteCategory"| D1
+    D2 -->|"觸發 onSnapshot"| FS_NOTES
+    D2 -->|"觸發 onSnapshot"| FS_CATS
+
+    %% UI → Sign out
+    UI -->|"登出"| SO1
+    SO3 -->|"顯示本地（訪客）資料"| UI

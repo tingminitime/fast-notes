@@ -4,6 +4,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   setDoc,
 } from 'firebase/firestore'
@@ -60,6 +61,33 @@ export function deleteCategory(uid: string, categoryId: string): Promise<void> {
   )
 }
 
+// 儲存密語驗證文件至 Firestore（首次設定 passphrase 時呼叫）
+export async function saveKeyVerification(uid: string, cryptoKey: CryptoKey): Promise<void> {
+  const { iv, ciphertext } = await encrypt(cryptoKey, JSON.stringify({ verified: true }))
+  return setDoc(doc(db, 'users', uid, 'settings', 'keyVerification'), { iv, ciphertext })
+}
+
+// 檢查驗證文件是否存在（用於判斷首次設定或回訪）
+export async function hasKeyVerification(uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keyVerification'))
+  return snap.exists()
+}
+
+// 嘗試解密驗證文件；成功回傳 true，文件不存在或解密失敗均回傳 false
+export async function verifyKey(uid: string, cryptoKey: CryptoKey): Promise<boolean> {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keyVerification'))
+    if (!snap.exists())
+      return false
+    const { iv, ciphertext } = snap.data() as { iv: string, ciphertext: string }
+    await decrypt(cryptoKey, iv, ciphertext)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
 // 訂閱指定使用者的筆記集合，解密後觸發回呼；回傳取消訂閱函式
 export function subscribeNotes(
   uid: string,
@@ -74,8 +102,14 @@ export function subscribeNotes(
           const data = d.data() as EncryptedNote
           try {
             const plaintext = await decrypt(cryptoKey, data.iv, data.ciphertext)
+
             const payload = JSON.parse(plaintext) as { title: string, text: string, categoryId: string | null }
-            return { id: data.id, createdAt: data.createdAt, ...payload } as Note
+
+            return {
+              id: data.id,
+              createdAt: data.createdAt,
+              ...payload,
+            } as Note
           }
           catch {
             return { id: data.id, createdAt: data.createdAt, title: '[Decryption failed]', text: '', categoryId: null } as Note
@@ -99,8 +133,13 @@ export function subscribeCategories(
         const data = d.data() as EncryptedCategory
         try {
           const plaintext = await decrypt(cryptoKey, data.iv, data.ciphertext)
+
           const payload = JSON.parse(plaintext) as { name: string }
-          return { id: data.id, name: payload.name } as Category
+
+          return {
+            id: data.id,
+            name: payload.name,
+          } as Category
         }
         catch {
           return null

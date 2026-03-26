@@ -26,6 +26,11 @@
       "sourceType": "github",
       "computedHash": "c5dadae2627f67c69ffb296cd66e27307d144ad1e7994998cc65ecd2eee637ae"
     },
+    "gh-cli": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "cbe644b0c6760ae2a1eaafa39133920d889331327065d92a131675a665273e56"
+    },
     "pinia": {
       "source": "antfu/skills",
       "sourceType": "github",

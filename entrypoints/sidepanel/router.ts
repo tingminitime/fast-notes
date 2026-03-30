@@ -4,6 +4,7 @@ import CategoryManagerView from './views/CategoryManagerView.vue'
 import LoginView from './views/LoginView.vue'
 import NoteEditorView from './views/NoteEditorView.vue'
 import NoteListView from './views/NoteListView.vue'
+import PassphraseView from './views/PassphraseView.vue'
 
 const routes = [
   { path: '/', name: 'notes', component: NoteListView },
@@ -11,6 +12,7 @@ const routes = [
   { path: '/edit/:id', name: 'notes-edit', component: NoteEditorView },
   { path: '/categories', name: 'categories', component: CategoryManagerView },
   { path: '/login', name: 'login', component: LoginView },
+  { path: '/passphrase', name: 'passphrase', component: PassphraseView },
 ]
 
 const router = createRouter({
@@ -22,6 +24,9 @@ router.beforeEach((to) => {
   const auth = useAuthStore()
   if (auth.isAuthenticated && to.name === 'login') {
     return { name: 'notes' }
+  }
+  if (auth.isAuthenticated && auth.passphraseStatus !== 'ready' && to.name !== 'passphrase') {
+    return { name: 'passphrase' }
   }
 })
 

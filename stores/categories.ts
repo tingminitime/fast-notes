@@ -26,17 +26,20 @@ export const useCategoriesStore = defineStore('categories', () => {
     if (isAuth) {
       pause()
       categories.value = []
-      if (authStore.uid && authStore.cryptoKey) {
-        _unsubscribeCategories = subscribeCategories(authStore.uid, authStore.cryptoKey, (firestoreCategories) => {
-          categories.value = firestoreCategories
-        })
-      }
     }
     else {
       _unsubscribeCategories?.()
       _unsubscribeCategories = null
       resume()
       await hydrate()
+    }
+  })
+
+  watch(() => authStore.cryptoKey, (key) => {
+    if (key && authStore.uid && !_unsubscribeCategories) {
+      _unsubscribeCategories = subscribeCategories(authStore.uid, key, (firestoreCategories) => {
+        categories.value = firestoreCategories
+      })
     }
   })
 

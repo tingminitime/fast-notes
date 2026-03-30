@@ -9,20 +9,32 @@ import {
   AlertDialogRoot,
   AlertDialogTitle,
 } from 'reka-ui'
+import { ref, watch } from 'vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   open?: boolean
   title?: string
   message: string
+  confirmText?: string
 }>(), {
   open: true,
   title: '',
+  confirmText: undefined,
 })
 
 const emit = defineEmits<{
   confirm: []
   cancel: []
 }>()
+
+const inputValue = ref('')
+
+watch(() => props.open, (val) => {
+  if (!val)
+    inputValue.value = ''
+})
+
+const canConfirm = () => !props.confirmText || inputValue.value === props.confirmText
 </script>
 
 <template>
@@ -44,6 +56,20 @@ const emit = defineEmits<{
         <AlertDialogDescription class="mb-4 text-sm text-gray-700">
           {{ message }}
         </AlertDialogDescription>
+        <div
+          v-if="confirmText"
+          class="mb-4"
+        >
+          <input
+            v-model="inputValue"
+            type="text"
+            :placeholder="`Type ${confirmText} to confirm`"
+            class="
+              w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
+              focus:border-red-400 focus:outline-none
+            "
+          >
+        </div>
         <div class="flex justify-end gap-2">
           <AlertDialogCancel
             data-testid="cancel-btn"
@@ -57,11 +83,13 @@ const emit = defineEmits<{
           </AlertDialogCancel>
           <AlertDialogAction
             data-testid="confirm-btn"
+            :disabled="!canConfirm()"
             class="
               rounded-sm bg-red-500 px-3 py-1 text-sm text-white
               hover:bg-red-600
+              disabled:cursor-not-allowed disabled:opacity-40
             "
-            @click="emit('confirm')"
+            @click="() => { if (canConfirm()) emit('confirm') }"
           >
             Delete
           </AlertDialogAction>

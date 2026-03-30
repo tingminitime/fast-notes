@@ -1,7 +1,14 @@
 <script lang="ts" setup>
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
+
+async function handleSignOut() {
+  await auth.signOut()
+  router.push({ name: 'notes' })
+}
 </script>
 
 <template>
@@ -18,7 +25,7 @@ const auth = useAuthStore()
             rounded-sm border border-gray-300 px-2 py-1 text-xs text-gray-600
             hover:bg-gray-100
           "
-          @click="auth.signOut()"
+          @click="handleSignOut()"
         >
           Sign out
         </button>

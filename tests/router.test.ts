@@ -31,8 +31,8 @@ describe('sidepanel router', () => {
   })
 
   describe('route configuration', () => {
-    it('has 5 routes', () => {
-      expect(router.getRoutes()).toHaveLength(5)
+    it('has 6 routes', () => {
+      expect(router.getRoutes()).toHaveLength(6)
     })
 
     it('has a notes route at /', () => {
@@ -85,9 +85,19 @@ describe('sidepanel router', () => {
       expect(router.currentRoute.value.name).toBe('notes')
     })
 
-    it('redirects authenticated users from login to notes', async () => {
+    it('redirects authenticated users to passphrase when passphrase not ready', async () => {
       const auth = useAuthStore()
       auth.user = { uid: 'uid-123' } as any
+      // passphraseStatus starts as 'loading'; navigating to any non-passphrase route redirects
+
+      await router.push({ name: 'categories' })
+      expect(router.currentRoute.value.name).toBe('passphrase')
+    })
+
+    it('redirects authenticated users from login to notes when passphrase is ready', async () => {
+      const auth = useAuthStore()
+      auth.user = { uid: 'uid-123' } as any
+      auth.passphraseStatus = 'ready' as any
 
       await router.push({ name: 'login' })
       expect(router.currentRoute.value.name).toBe('notes')

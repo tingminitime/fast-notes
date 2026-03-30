@@ -1,8 +1,8 @@
-export async function deriveKey(uid: string): Promise<CryptoKey> {
+export async function deriveKey(passphrase: string, uid: string): Promise<CryptoKey> {
   const encoder = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    encoder.encode(uid),
+    encoder.encode(passphrase),
     'PBKDF2',
     false,
     ['deriveKey'],

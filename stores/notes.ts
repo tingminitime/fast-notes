@@ -29,17 +29,20 @@ export const useNotesStore = defineStore('notes', () => {
     if (isAuth) {
       pause()
       notes.value = []
-      if (authStore.uid && authStore.cryptoKey) {
-        _unsubscribeNotes = subscribeNotes(authStore.uid, authStore.cryptoKey, (firestoreNotes) => {
-          notes.value = firestoreNotes
-        })
-      }
     }
     else {
       _unsubscribeNotes?.()
       _unsubscribeNotes = null
       resume()
       await hydrate()
+    }
+  })
+
+  watch(() => authStore.cryptoKey, (key) => {
+    if (key && authStore.uid && !_unsubscribeNotes) {
+      _unsubscribeNotes = subscribeNotes(authStore.uid, key, (firestoreNotes) => {
+        notes.value = firestoreNotes
+      })
     }
   })
 

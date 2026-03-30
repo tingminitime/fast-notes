@@ -1,24 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import { decrypt, deriveKey, encrypt } from './crypto'
 
-describe('deriveKey', () => {
+describe('deriveKey(passphrase, uid)', () => {
   it('returns a CryptoKey object', async () => {
-    const key = await deriveKey('test-uid')
+    const key = await deriveKey('my-passphrase', 'user-123')
     expect(key).toBeInstanceOf(CryptoKey)
   })
 
-  it('produces a deterministic key for the same uid (verified via round-trip)', async () => {
-    const key1 = await deriveKey('user-abc')
-    const key2 = await deriveKey('user-abc')
-    const { iv, ciphertext } = await encrypt(key1, 'verification-payload')
-    const result = await decrypt(key2, iv, ciphertext)
+  it('is deterministic — same inputs produce keys that decrypt each other\'s ciphertext', async () => {
+    const keyA = await deriveKey('secret', 'uid-abc')
+    const keyB = await deriveKey('secret', 'uid-abc')
+    const { iv, ciphertext } = await encrypt(keyA, 'verification-payload')
+    const result = await decrypt(keyB, iv, ciphertext)
     expect(result).toBe('verification-payload')
+  })
+
+  it('different passphrase → decryption fails', async () => {
+    const keyA = await deriveKey('correct-passphrase', 'uid-abc')
+    const keyB = await deriveKey('wrong-passphrase', 'uid-abc')
+    const { iv, ciphertext } = await encrypt(keyA, 'secret data')
+    await expect(decrypt(keyB, iv, ciphertext)).rejects.toThrow()
+  })
+
+  it('different uid (salt) → decryption fails', async () => {
+    const keyA = await deriveKey('same-passphrase', 'uid-alice')
+    const keyB = await deriveKey('same-passphrase', 'uid-bob')
+    const { iv, ciphertext } = await encrypt(keyA, 'secret data')
+    await expect(decrypt(keyB, iv, ciphertext)).rejects.toThrow()
   })
 })
 
 describe('encrypt', () => {
   it('returns an object with iv and ciphertext as base64 strings', async () => {
-    const key = await deriveKey('uid-test')
+    const key = await deriveKey('pass', 'uid-test')
     const result = await encrypt(key, 'plaintext')
     expect(typeof result.iv).toBe('string')
     expect(typeof result.ciphertext).toBe('string')
@@ -27,7 +41,7 @@ describe('encrypt', () => {
   })
 
   it('does not include plaintext in the ciphertext output', async () => {
-    const key = await deriveKey('uid-test')
+    const key = await deriveKey('pass', 'uid-test')
     const plaintext = 'supersecret'
     const { ciphertext } = await encrypt(key, plaintext)
     expect(ciphertext).not.toContain(plaintext)
@@ -37,7 +51,7 @@ describe('encrypt', () => {
 
 describe('decrypt', () => {
   it('correctly decrypts encrypted plaintext', async () => {
-    const key = await deriveKey('uid-test')
+    const key = await deriveKey('pass', 'uid-test')
     const plaintext = 'Hello, World!'
     const { iv, ciphertext } = await encrypt(key, plaintext)
     const result = await decrypt(key, iv, ciphertext)
@@ -45,8 +59,8 @@ describe('decrypt', () => {
   })
 
   it('throws when decrypting with wrong key', async () => {
-    const correctKey = await deriveKey('uid-correct')
-    const wrongKey = await deriveKey('uid-wrong')
+    const correctKey = await deriveKey('correct', 'uid-correct')
+    const wrongKey = await deriveKey('wrong', 'uid-wrong')
     const { iv, ciphertext } = await encrypt(correctKey, 'secret data')
     await expect(decrypt(wrongKey, iv, ciphertext)).rejects.toThrow()
   })

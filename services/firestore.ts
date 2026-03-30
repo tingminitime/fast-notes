@@ -5,6 +5,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   setDoc,
 } from 'firebase/firestore'
@@ -64,12 +65,17 @@ export function deleteCategory(uid: string, categoryId: string): Promise<void> {
 // 儲存密語驗證文件至 Firestore（首次設定 passphrase 時呼叫）
 export async function saveKeyVerification(uid: string, cryptoKey: CryptoKey): Promise<void> {
   const { iv, ciphertext } = await encrypt(cryptoKey, JSON.stringify({ verified: true }))
-  return setDoc(doc(db, 'users', uid, 'settings', 'keyVerification'), { iv, ciphertext })
+  return setDoc(
+    doc(db, 'users', uid, 'settings', 'keyVerification'),
+    { iv, ciphertext },
+  )
 }
 
 // 檢查驗證文件是否存在（用於判斷首次設定或回訪）
 export async function hasKeyVerification(uid: string): Promise<boolean> {
-  const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keyVerification'))
+  const snap = await getDoc(
+    doc(db, 'users', uid, 'settings', 'keyVerification'),
+  )
   return snap.exists()
 }
 
@@ -85,6 +91,15 @@ export async function verifyKey(uid: string, cryptoKey: CryptoKey): Promise<bool
   }
   catch {
     return false
+  }
+}
+
+// 刪除指定使用者的所有 Firestore 資料（notes、categories、settings）
+export async function deleteAllUserData(uid: string): Promise<void> {
+  const subcollections = ['notes', 'categories', 'settings']
+  for (const sub of subcollections) {
+    const snapshot = await getDocs(collection(db, 'users', uid, sub))
+    await Promise.all(snapshot.docs.map(d => deleteDoc(d.ref)))
   }
 }
 

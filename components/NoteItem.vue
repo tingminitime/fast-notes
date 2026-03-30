@@ -54,9 +54,7 @@ function confirmDelete() {
         </span>
         <span
           v-if="note.categoryId"
-          class="
-            w-fit rounded-sm bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700
-          "
+          class="w-fit rounded-sm bg-gray-700 px-1.5 py-0.5 text-xs text-white"
         >
           {{ categoriesStore.categoryById(note.categoryId)?.name }}
         </span>

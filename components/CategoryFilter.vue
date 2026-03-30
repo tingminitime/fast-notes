@@ -26,7 +26,7 @@ const categoriesStore = useCategoriesStore()
         data-[state=off]:border data-[state=off]:border-gray-300
         data-[state=off]:text-gray-600
         data-[state=off]:hover:bg-gray-100
-        data-[state=on]:bg-brand-600 data-[state=on]:text-white
+        data-[state=on]:bg-gray-700 data-[state=on]:text-white
       "
     >
       All
@@ -41,7 +41,7 @@ const categoriesStore = useCategoriesStore()
         data-[state=off]:border data-[state=off]:border-gray-300
         data-[state=off]:text-gray-600
         data-[state=off]:hover:bg-gray-100
-        data-[state=on]:bg-brand-600 data-[state=on]:text-white
+        data-[state=on]:bg-gray-700 data-[state=on]:text-white
       "
     >
       {{ cat.name }}

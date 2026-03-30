@@ -214,8 +214,8 @@ defineExpose({ editorHtml })
     <div class="flex gap-2">
       <button
         class="
-          rounded-sm bg-blue-500 px-3 py-1 text-sm text-white
-          hover:bg-blue-600
+          rounded-sm bg-brand-500 px-3 py-1 text-sm text-white
+          hover:bg-brand-600
         "
         @click="submit"
       >

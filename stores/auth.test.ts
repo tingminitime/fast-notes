@@ -52,14 +52,16 @@ vi.mock('wxt/utils/storage', () => ({
   },
 }))
 
-const { mockGetAuthToken } = vi.hoisted(() => ({
-  mockGetAuthToken: vi.fn<() => Promise<{ token?: string, grantedScopes?: string[] }>>(),
+const { mockLaunchWebAuthFlow, mockGetRedirectURL } = vi.hoisted(() => ({
+  mockLaunchWebAuthFlow: vi.fn<(details: { url: string, interactive: boolean }) => Promise<string | undefined>>(),
+  mockGetRedirectURL: vi.fn(() => 'https://fake-ext-id.chromiumapp.org/'),
 }))
 
 vi.mock('wxt/browser', () => ({
   browser: {
     identity: {
-      getAuthToken: mockGetAuthToken,
+      launchWebAuthFlow: mockLaunchWebAuthFlow,
+      getRedirectURL: mockGetRedirectURL,
     },
   },
 }))
@@ -126,9 +128,14 @@ describe('useAuthStore', () => {
   })
 
   describe('signInWithGoogle', () => {
+    beforeEach(() => {
+      vi.stubEnv('VITE_OAUTH_CLIENT_ID', 'test-client-id')
+    })
+
     it('clears loading and error state on success, leaving user to be set by onAuthStateChanged', async () => {
       const mockUser = { uid: 'uid-123', displayName: 'Test User', email: 'test@example.com' }
-      mockGetAuthToken.mockResolvedValueOnce({ token: 'mock-access-token' })
+      const redirectUrl = 'https://fake-ext-id.chromiumapp.org/'
+      mockLaunchWebAuthFlow.mockResolvedValueOnce(`${redirectUrl}#access_token=mock-access-token&token_type=Bearer`)
       vi.mocked(firebaseAuth.signInWithCredential).mockResolvedValueOnce({ user: mockUser } as any)
 
       const store = useAuthStore()
@@ -139,13 +146,40 @@ describe('useAuthStore', () => {
       expect(store.user).toBeNull()
     })
 
+    it('launches web auth flow with correct OAuth URL params', async () => {
+      const redirectUrl = 'https://fake-ext-id.chromiumapp.org/'
+      mockLaunchWebAuthFlow.mockResolvedValueOnce(`${redirectUrl}#access_token=tok&token_type=Bearer`)
+      vi.mocked(firebaseAuth.signInWithCredential).mockResolvedValueOnce({} as any)
+
+      const store = useAuthStore()
+      await store.signInWithGoogle()
+
+      const callArgs = mockLaunchWebAuthFlow.mock.calls[0]![0]
+      const url = new URL(callArgs.url)
+      expect(url.origin + url.pathname).toBe('https://accounts.google.com/o/oauth2/auth')
+      expect(url.searchParams.get('client_id')).toBe('test-client-id')
+      expect(url.searchParams.get('response_type')).toBe('token')
+      expect(url.searchParams.get('redirect_uri')).toBe(redirectUrl)
+      expect(callArgs.interactive).toBe(true)
+    })
+
     it('sets error on failure and keeps user null', async () => {
-      mockGetAuthToken.mockRejectedValueOnce(new Error('The user did not approve access.'))
+      mockLaunchWebAuthFlow.mockRejectedValueOnce(new Error('The user did not approve access.'))
 
       const store = useAuthStore()
       await store.signInWithGoogle()
 
       expect(store.user).toBeNull()
+      expect(store.error).toBeTruthy()
+      expect(store.isLoading).toBe(false)
+    })
+
+    it('sets error when response URL has no access_token', async () => {
+      mockLaunchWebAuthFlow.mockResolvedValueOnce('https://fake-ext-id.chromiumapp.org/#error=access_denied')
+
+      const store = useAuthStore()
+      await store.signInWithGoogle()
+
       expect(store.error).toBeTruthy()
       expect(store.isLoading).toBe(false)
     })

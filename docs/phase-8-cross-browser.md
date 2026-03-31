@@ -9,7 +9,7 @@
 - [Phase 6 — 雲端同步（Firestore）](./phase-6-cloud-sync.md)
 - [Phase 7 — 端到端加密](./phase-7-encryption.md)
 
-本階段確認 Fast Notes 可在 Chrome、Firefox、Edge 三款瀏覽器上正確建置、安裝並完整運作。WXT 已提供跨瀏覽器建置指令，本階段重點為相容性驗證與修正。
+本階段確認 Fast Notes 可在 Chrome、Firefox、Edge 三款瀏覽器上正確建置、安裝並完整運作。三款瀏覽器均使用 Manifest V3，WXT 已提供跨瀏覽器建置指令，本階段重點為相容性驗證與修正。
 
 ---
 
@@ -45,7 +45,7 @@
 
 ```bash
 pnpm build           # Chrome / Edge (Chromium MV3)
-pnpm build:firefox   # Firefox (MV2)
+pnpm build:firefox   # Firefox (MV3)
 pnpm zip             # Chrome zip for Chrome Web Store
 pnpm zip:firefox     # Firefox zip for Firefox Add-ons
 ```
@@ -54,8 +54,8 @@ pnpm zip:firefox     # Firefox zip for Firefox Add-ons
 
 | 項目 | Chrome / Edge | Firefox |
 |------|--------------|---------|
-| Manifest 版本 | MV3 | MV2 |
-| Side Panel API | `chrome.sidePanel` | `browser.sidebarAction` |
+| Manifest 版本 | MV3 | MV3 |
+| Side Panel API | `sidePanel` permission + `browser.sidePanel` | `sidebar_action` manifest key + `browser.sidebarAction` |
 | Firebase Auth popup | 支援 | 需確認 popup 行為 |
 | Web Crypto API | 支援 | 支援 |
 
@@ -104,7 +104,7 @@ pnpm zip:firefox     # Firefox zip for Firefox Add-ons
 
 ### Firefox
 
-- [ ] 載入 `pnpm build:firefox` 產出的 `.output/firefox-mv2` 資料夾（`about:debugging`）
+- [ ] 載入 `pnpm build:firefox` 產出的 `.output/firefox-mv3` 資料夾（`about:debugging`）
 - [ ] 確認 icon 點擊可開啟 / 關閉 sidebar
 - [ ] 完成完整 smoke test：登入 → 新增筆記 → 分類 → 複製 → 刪除 → 登出
 - [ ] 確認 UI 在 Firefox 與 Chrome 視覺上一致

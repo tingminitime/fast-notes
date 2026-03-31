@@ -72,9 +72,26 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     error.value = null
     try {
-      const { token } = await browser.identity.getAuthToken({ interactive: true })
-      if (!token)
+      const clientId = import.meta.env.VITE_OAUTH_CLIENT_ID as string
+      const redirectUrl = browser.identity.getRedirectURL()
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/auth')
+      authUrl.searchParams.set('client_id', clientId)
+      authUrl.searchParams.set('response_type', 'token')
+      authUrl.searchParams.set('redirect_uri', redirectUrl)
+      authUrl.searchParams.set('scope', 'openid email profile')
+      authUrl.searchParams.set('prompt', 'select_account')
+
+      const responseUrl = await browser.identity.launchWebAuthFlow({ url: authUrl.href, interactive: true })
+
+      if (!responseUrl)
         throw new Error('Failed to get auth token')
+
+      const hash = new URL(responseUrl).hash.slice(1)
+      const token = new URLSearchParams(hash).get('access_token')
+
+      if (!token)
+        throw new Error('No access_token in response')
+
       const credential = GoogleAuthProvider.credential(null, token)
       await signInWithCredential(auth, credential)
     }

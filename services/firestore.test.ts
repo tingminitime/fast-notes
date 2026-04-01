@@ -136,7 +136,7 @@ describe('subscribeNotes', () => {
     const decryptedPayload = { title: 'Note Title', text: 'Hello', categoryId: 'cat1' }
     mockDecrypt.mockResolvedValueOnce(JSON.stringify(decryptedPayload))
 
-    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (snap: unknown) => void) => {
+    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (_snap: unknown) => void) => {
       cb({ docs: [{ data: () => encryptedDoc }] })
       return vi.fn()
     })
@@ -154,7 +154,7 @@ describe('subscribeNotes', () => {
     const encryptedDoc = { id: 'n1', createdAt: 1000, iv: 'bad-iv', ciphertext: 'bad-ct' }
     mockDecrypt.mockRejectedValueOnce(new Error('Decryption failed'))
 
-    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (snap: unknown) => void) => {
+    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (_snap: unknown) => void) => {
       cb({ docs: [{ data: () => encryptedDoc }] })
       return vi.fn()
     })
@@ -187,7 +187,7 @@ describe('subscribeCategories', () => {
     const encryptedDoc = { id: 'c1', iv: 'test-iv', ciphertext: 'test-ciphertext' }
     mockDecrypt.mockResolvedValueOnce(JSON.stringify({ name: 'Work' }))
 
-    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (snap: unknown) => void) => {
+    mockOnSnapshot.mockImplementation((_ref: unknown, cb: (_snap: unknown) => void) => {
       cb({ docs: [{ data: () => encryptedDoc }] })
       return vi.fn()
     })

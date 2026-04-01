@@ -4,7 +4,7 @@ import { useStorageSync } from './useStorageSync'
 
 // Mock wxt/utils/storage
 const mockStore = new Map<string, any>()
-const mockWatchers = new Map<string, Array<(newVal: any, oldVal: any) => void>>()
+const mockWatchers = new Map<string, Array<(_newVal: any, _oldVal: any) => void>>()
 
 vi.mock('wxt/utils/storage', () => ({
   storage: {
@@ -15,7 +15,7 @@ vi.mock('wxt/utils/storage', () => ({
       setValue: vi.fn(async (val: any) => {
         mockStore.set(key, val)
       }),
-      watch: vi.fn((cb: (newVal: any, _oldVal: any) => void) => {
+      watch: vi.fn((cb: (_newVal: any, _oldVal: any) => void) => {
         if (!mockWatchers.has(key))
           mockWatchers.set(key, [])
         mockWatchers.get(key)!.push(cb)

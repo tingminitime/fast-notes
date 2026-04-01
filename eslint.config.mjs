@@ -73,7 +73,7 @@ export default antfu(
         'warn',
         {
           detectComponentClasses: true,
-          ignore: ['note-preview'],
+          ignore: ['note-preview', 'note-editor-wrapper', 'anim-pop', 'anim-draw-check', 'anim-draw-x1', 'anim-draw-x2'],
         },
       ],
     },

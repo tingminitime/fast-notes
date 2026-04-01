@@ -188,7 +188,7 @@ describe('useCategoriesStore', () => {
 
     it('populates categories from Firestore snapshot callback', async () => {
       const snapshotCategories: Category[] = [{ id: 'c1', name: 'Work' }]
-      mockSubscribeCategories.mockImplementation((_uid: string, _key: CryptoKey, cb: (cats: Category[]) => void) => {
+      mockSubscribeCategories.mockImplementation((_uid: string, _key: CryptoKey, cb: (_cats: Category[]) => void) => {
         cb(snapshotCategories)
         return vi.fn()
       })

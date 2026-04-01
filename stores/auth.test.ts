@@ -53,7 +53,7 @@ vi.mock('wxt/utils/storage', () => ({
 }))
 
 const { mockLaunchWebAuthFlow, mockGetRedirectURL } = vi.hoisted(() => ({
-  mockLaunchWebAuthFlow: vi.fn<(details: { url: string, interactive: boolean }) => Promise<string | undefined>>(),
+  mockLaunchWebAuthFlow: vi.fn<(_details: { url: string, interactive: boolean }) => Promise<string | undefined>>(),
   mockGetRedirectURL: vi.fn(() => 'https://fake-ext-id.chromiumapp.org/'),
 }))
 
@@ -210,7 +210,7 @@ describe('useAuthStore', () => {
 
   describe('passphraseStatus', () => {
     it('is set to "needed" when onAuthStateChanged fires with a user but no cached passphrase', async () => {
-      let capturedCallback!: (user: any) => void
+      let capturedCallback!: (_user: any) => void
       vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementationOnce((_auth, cb: any) => {
         capturedCallback = cb
         return vi.fn()
@@ -228,7 +228,7 @@ describe('useAuthStore', () => {
       vi.mocked(firestoreService.hasKeyVerification).mockResolvedValue(true)
       vi.mocked(firestoreService.verifyKey).mockResolvedValue(true)
 
-      let capturedCallback!: (user: any) => void
+      let capturedCallback!: (_user: any) => void
       vi.mocked(firebaseAuth.onAuthStateChanged).mockImplementationOnce((_auth, cb: any) => {
         capturedCallback = cb
         return vi.fn()

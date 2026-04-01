@@ -107,7 +107,7 @@ export async function deleteAllUserData(uid: string): Promise<void> {
 export function subscribeNotes(
   uid: string,
   cryptoKey: CryptoKey,
-  callback: (notes: Note[]) => void,
+  callback: (_notes: Note[]) => void,
 ): () => void {
   return onSnapshot(
     collection(db, 'users', uid, 'notes'),
@@ -140,7 +140,7 @@ export function subscribeNotes(
 export function subscribeCategories(
   uid: string,
   cryptoKey: CryptoKey,
-  callback: (categories: Category[]) => void,
+  callback: (_categories: Category[]) => void,
 ): () => void {
   return onSnapshot(collection(db, 'users', uid, 'categories'), async (snapshot) => {
     const categories = await Promise.all(

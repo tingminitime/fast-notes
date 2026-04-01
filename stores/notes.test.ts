@@ -362,7 +362,7 @@ describe('useNotesStore', () => {
       const snapshotNotes: Note[] = [
         { id: 'n1', title: '', text: 'Firestore note', createdAt: 100, categoryId: null },
       ]
-      mockSubscribeNotes.mockImplementation((_uid: string, _key: CryptoKey, cb: (notes: Note[]) => void) => {
+      mockSubscribeNotes.mockImplementation((_uid: string, _key: CryptoKey, cb: (_notes: Note[]) => void) => {
         cb(snapshotNotes)
         return vi.fn()
       })

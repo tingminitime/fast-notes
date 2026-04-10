@@ -4,22 +4,22 @@
     "context7-cli": {
       "source": "upstash/context7",
       "sourceType": "github",
-      "computedHash": "2c09d102a9a6c5e6a06e2cc8a5641947270aa977e8e37c7e532719badf1575e6"
+      "computedHash": "6077b3c638fb7efb31d9b2c815436650de4aef73e7b671edec2f1c63f6a1e105"
     },
     "firebase-auth-basics": {
-      "source": "firebase/skills",
+      "source": "firebase/agent-skills",
       "sourceType": "github",
-      "computedHash": "df411eb125374de6086edd38dd739769088b60945052060aec1f57f934be3e27"
+      "computedHash": "ff79d278c0968f297d60f37532c32fd3b8bd9aad9c64b9f354585c701e80112a"
     },
     "firebase-basics": {
-      "source": "firebase/skills",
+      "source": "firebase/agent-skills",
       "sourceType": "github",
-      "computedHash": "b1f49688bb5838785f3b45afe893196df45a2041a5a7ebf8271649118ee4ff04"
+      "computedHash": "1a63ad98e772cbe4cded7eb8d83d0f8722f13f7b1a47087a8aa59a4080fc82bb"
     },
     "firebase-firestore-standard": {
-      "source": "firebase/skills",
+      "source": "firebase/agent-skills",
       "sourceType": "github",
-      "computedHash": "433338142338ab05fe004adb37dce8ffbbcbce396303c8bd520ca2cc74f2da78"
+      "computedHash": "ab2332607f40ae408e9c56e177b02fad55e071bfac4c2035a16ce0787768953e"
     },
     "firebase-local-env-setup": {
       "source": "firebase/skills",
@@ -39,7 +39,7 @@
     "playwright-cli": {
       "source": "microsoft/playwright-cli",
       "sourceType": "github",
-      "computedHash": "7075ab30f588019197a2f1518bb4c9d33d69d33352af079b5f9c60303ad3886e"
+      "computedHash": "45b90b409fb80cf08ee4e8b72377bddacfac3d1c1fac69bff5fd5342fad26adf"
     },
     "pnpm": {
       "source": "antfu/skills",

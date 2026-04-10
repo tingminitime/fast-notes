@@ -7,5 +7,8 @@
       "mcp__context7__query-docs",
       "mcp__context7__resolve-library-id"
     ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
   }
 }
